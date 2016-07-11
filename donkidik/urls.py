@@ -1,3 +1,4 @@
+from donkidik import views,api
 """donkidik URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -18,4 +19,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^$', views.index),
+    url(r'^posts/', views.posts),
+    url(r'^api/signup', api.signup),
 ]
