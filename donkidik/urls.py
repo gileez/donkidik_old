@@ -19,7 +19,13 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$', views.index),
-    url(r'^posts/', views.posts),
-    url(r'^api/signup', api.signup),
+    url(r'^$', views.home),
+    url(r'^login/$', views.index),
+    url(r'^posts/$', views.posts),
+    url(r'^api/signup/$', api.signup),
+    url(r'^api/login/$', api.login_req),
+    url(r'^api/logout/$', api.logout_req),
+    url(r'^gal/1/$', views.gal1),
+    url(r'^gal/2/$', views.gal2),
+    url(r'^gal/3/$', views.gal3)
 ]
