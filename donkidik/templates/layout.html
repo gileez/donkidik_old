@@ -1,0 +1,13 @@
+<!doctype html>
+<title>DonkiDik</title>
+{% block head %}
+{% endblock %}
+<div class=page>
+ 	<h1>DonkiDik</h1>
+ 	{% if user.is_authenticated %}
+ 		<p>{{ user.username }} is logged in
+ 	{% else %}
+ 		<p>Please login
+ 	{% endif %}
+  	{% block body %}{% endblock %}
+</div>

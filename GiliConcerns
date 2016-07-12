@@ -1,0 +1,5 @@
+- login_required does not check user is_active
+- do not understand the next mechanism. at what point is the browser suppose to go there?
+- do i care about class based views?
+- in flask i worked with sessions. where are they here?
+- during api/signup i call the login function. is this necessary? does the user get logged in automatically?
