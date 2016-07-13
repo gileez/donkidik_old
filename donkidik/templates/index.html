@@ -2,14 +2,12 @@
 
 {% block head %}
 	<!--BOOTSTRAP-->
-	<link rel="stylesheet" href="/static/css/bootstrap.css">
-	<title>Eventr</title>
 	<style type="text/css">
-		#main{ border:solid 1px blue;width:500px; padding:25px; margin:0 auto; margin-top:50px; text-align:center;}
+		#main{ border:solid 1px teal;width:500px; padding:25px; margin:0 auto; margin-top:50px; text-align:center;}
 		#main input[type="text"], #main input[type="name"], #main input[type="password"]{margin:5px 0; width:200px; padding: 5px;}
 
 		#main .signup, #main .login{display:none;}
-		#main .signup h3, #main .login h3{font-size:15px;color:blue;cursor:pointer;}
+		#main .signup h3, #main .login h3{font-size:15px;color:teal;cursor:pointer;}
 		#main .signup h3:hover, #main .login h3:hover{text-decoration: underline;}
 		#main.show_signup .signup{display:block;}
 		#main.show_login .login{display:block;}
@@ -17,10 +15,10 @@
 		#main #txt_password{}
 		#main #txt_password{}
 		#main #txt_email{}
-		#main #btn_submit, #btn_logout, #main #btn_submit_login{font-size:22px;border: solid 1px #333; padding: 2px 15px;background:#f5f5f5; margin-top:5px;}
+		#main #btn_submit, #btn_logout, #main #btn_submit_login{display:block-inline; font-size:22px; border:solid 1px #333; padding: 2px 15px;background:#f5f5f5; margin-top:5px;}
 		#main #err, #main #err_login{display:none; border: solid 1px maroon; color:red;margin-top: 20px;}
 	</style>
-	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+	
 	<script type="text/javascript">
 	$(document).ready(function(){
 
@@ -95,7 +93,7 @@
 			var url = "/api/login/",
 				data = {'email': email_address, 'password':passwd };
 			$.post(url, data, function(res){
-				if (true){
+				if (res.status == 'OK'){
 					//loading...
 					window.location.href = "/"
 				}
@@ -110,9 +108,8 @@
 
 		$("#btn_logout").click(function(){
 			console.log("clicked logout")
-			var url="/api/logout"
+			var url="/api/logout/"
 			$.post(url)
-			console.log("i tried logging out")
 		});
 
 	});//end documentready
@@ -120,10 +117,7 @@
 	</script>
 {% endblock %}
 {% block body %}
-<!--{% if current_user.is_authenticated %}
-  logged in: {{ current_user.name }}!
-{% endif %}-->
-	<div id="main" class="show_signup">
+	<div id="main" class="show_login">
 		<div class="signup">
 			<h1>Signup</h1>
 			<h3>Already a memeber? click here to login</h3>

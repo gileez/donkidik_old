@@ -1,13 +1,27 @@
 <!doctype html>
 <title>DonkiDik</title>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+<link rel="stylesheet" href="/static/css/bootstrap.css">
+<style type="text/css">
+		.page .top{ display:block; color: white; background: teal; padding: 5px 20px;}
+		.page .top ul{list-style-type: none; padding: 0; margin: 0;}
+		.page .top ul li {display: inline; padding: 2px;}
+		.page .top ul li a{color: white;}
+		.page .top ul li a:hover{ color:teal; background:white;}
+
+	</style>
 {% block head %}
 {% endblock %}
-<div class=page>
- 	<h1>DonkiDik</h1>
- 	{% if user.is_authenticated %}
- 		<p>{{ user.username }} is logged in
- 	{% else %}
- 		<p>Please login
- 	{% endif %}
+<div class="page">
+	<div class="top">
+ 		<h1>DonkiDik</h1>
+ 			<div class="menu"><ul>
+ 		 	{% if user.is_authenticated %}
+ 				<li>Welcome {{ user.first_name }}</li>|
+ 				<li><a href="api/logout">Logout</a></li>
+ 			{% endif %}
+ 			</ul>
+ 			</div>
+ 	</div>
   	{% block body %}{% endblock %}
 </div>

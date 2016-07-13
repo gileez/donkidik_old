@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block head %}
+	<style type="text/css">
+		#main input[type="text"], #main input[type="name"], #main input[type="password"]{margin:5px 0; padding: 5px;}
+
+		#main {display:block; position: absolute;width:100%;}
+		#main .add_post{padding: 20px 0; padding-bottom: 10px;}
+		#main .add_post .types{color: black; background:none;}
+		#main .add_post .types ul{list-style: none; padding:0; margin:0;}
+		#main .add_post .types ul li{display:inline; padding: 5px;}
+		#main .add_post .types ul li:hover{color:white; background: grey;}
+		#main .add_post .types .selected, #main .add_post .types .selected:hover{color:white; background: black;}
+		#main .add_post #post_state{color:red; font-size: 12px}
+		#main .post_list, #main .add_post{width:33%; min-width: 300px; position:relative; left: 33.3%;}
+		#main .post_list .post{border: solid 1px; font-size: 16px; margin-top:10px;}
+		#main .post_list .post .Report{background: teal; color:white;}
+		#main .post_list .post .General{background: orange; color:white;}
+		#main .post_list .post .text{margin: 5px;}
+		#main .post_list .post a{color: white;}
+		#main .post_list .post a:hover{color: teal; background: white;}
+
+	</style>
+	
+	<script type="text/javascript">
+		$(document).ready(function(){
+			//get all posts
+			var selected_id = 1;
+			function refresh_posts(){
+				$.post("api/posts/all/", function(res){
+					var $post_list = $(".post_list"),
+						pl_html = '';
+					for (var i=res.data.length-1; i>-1; i--){
+						pl_html+="<div class=\"post\"><div class=\"" + res.data[i].post_type + "\">" + res.data[i].post_type +" by <a href=\"api/posts/" + res.data[i].id + "/\">"+ res.data[i].author + "</a></div><div class=\"text\">" + res.data[i].text + "</div></div>"
+					}
+					$post_list.html(pl_html);
+				});//end $.post
+			}
+			//get all post types
+			$.post("api/post/types/",function(res){
+				var $post_types = $(".types ul"),
+					ptypes = '';
+				for (var i=0; i<res.data.length ; i++){
+					ptypes+="<li id=\""+ res.data[i].id + "\">"+ res.data[i].name + "</li>";
+				}
+				$post_types.html(ptypes);
+				$(".types ul li").removeClass("selected"); 
+				$(".types ul li").first().addClass("selected");
+
+			});//end $.post
+
+			//listen to changes on selected post type
+			$(document).on('click','.types ul li',function(){
+				console.log("click");
+				$(".types ul li").removeClass("selected");
+				$(this).addClass("selected");
+				selected_id = $(this).attr("id");
+			});
+
+			$("#submit_post").click(function(){
+
+				data={	'text': $("#post_text").val(),
+						'post_type':selected_id
+						}
+				$.post("api/post/add/", data, function(res){
+					if (res.status == 'OK'){
+						$("#post_text").val('');
+						$("#post_state").empty();
+					}
+					else{
+						//add error
+						if (res.error){
+							$("#post_state").html(res.error);
+						}
+						else{
+							$("#post_state").html("unknown error when attempting to post");
+						}
+					}
+				});//end $.post
+				refresh_posts();
+			});// end submit_post click
+			
+			refresh_posts();
+		});//end documentready
+
+	</script>
+{% endblock %}
+{% block body %}
+	<div id="main">
+		<div class="add_post">
+			<div class="types">
+			<ul></ul>
+			</div>
+			<div class="post_content">
+			<input type="text" id="post_text" placeholder="let us know!" />
+			<input type="button" id="submit_post" value="post"/>
+			<div id="post_state"></div>
+			</div>
+		</div>
+		<div class="post_list">
+		</div>
+	</div>
+{% endblock %}

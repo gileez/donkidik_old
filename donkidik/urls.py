@@ -18,14 +18,18 @@ from django.conf.urls import url
 from django.contrib import admin
 
 urlpatterns = [
+    # ===== ADMIN ======
     url(r'^admin/', admin.site.urls),
+    # ===== VIEWS ======
     url(r'^$', views.home),
     url(r'^login/$', views.index),
     url(r'^posts/$', views.posts),
+    # ===== API ========
     url(r'^api/signup/$', api.signup),
     url(r'^api/login/$', api.login_req),
     url(r'^api/logout/$', api.logout_req),
-    url(r'^gal/1/$', views.gal1),
-    url(r'^gal/2/$', views.gal2),
-    url(r'^gal/3/$', views.gal3)
+    url(r'api/post/add/$', api.create_post),
+    url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
+    url(r'api/posts/all/$', api.get_posts),
+    url(r'api/post/types/$', api.get_post_types),
 ]

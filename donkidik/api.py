@@ -1,4 +1,4 @@
-import models
+from models import *
 import views
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -6,8 +6,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.core import serializers
 from django.http import JsonResponse
-import json
+from django.utils import timezone
+import json, datetime
 #TODO import db
 
 @csrf_exempt
@@ -21,10 +23,21 @@ def signup(request):
 	new_user = User.objects.create_user(username=username, email=email, password=pw, first_name=name)
 	if new_user:
 		new_user.save()
-		ret['status'] = 'OK'
 		#attempt login
-		login(request, new_user)
+		user = authenticate(username=username,password=pw)
+		if user is not None:
+			if user.is_active:
+				ret['status'] = 'OK'
+				login(request, user)
+			else:
+				ret['error'] = 'failed to make user active'
+		else:
+			# a very weird case where you managed to add the user but failed on the authentication
+			ret['error'] = 'crazy auth issue'
+			pass
+	ret['error'] = 'failed to create new user'
 	return JsonResponse(ret)
+
 @csrf_exempt
 def login_req(request):
 	ret = {'status':'FAIL', 'error':''}
@@ -39,7 +52,82 @@ def login_req(request):
 			login(request, user)
 			ret['status'] = 'OK'
 	return JsonResponse(ret)
+
 @csrf_exempt
 def logout_req(request):
 	logout(request)
 	return HttpResponseRedirect('/')
+
+def user_posts(request,uid):
+	print "welcome user_posts %s" %uid
+	posts = Post.objects.filter(author=uid)
+	for p in posts:
+		print p
+	data = serializers.serialize('json', Post.objects.filter(author=uid), fields=('text','author'))
+	ret = {'status':'OK',
+			'data':data
+			}
+	return JsonResponse(ret)
+@csrf_exempt
+def create_post(request):
+	ret = {'status':'FAIL'}
+	if not request.user.is_authenticated():
+		ret['error'] = "User is not logged in"
+		return JsonResponse(ret)
+
+	else:
+		# make sure user isn't abusing the system
+		if not request.user.is_staff:
+			print "not staff"
+			today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
+			today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
+			posts = Post.objects.filter(author=request.user, published_date__range=(today_min, today_max))
+			print "total posts %d" %len(posts)
+			if len(posts) > 2:
+				ret['error'] = "You have exceeded your post limit for today"
+				return JsonResponse(ret)
+		data = request.POST
+		uid = int(request.user.id)
+		post_type = int(data.get('post_type'))
+		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, published_date=datetime.datetime.now())
+		p.save()
+		ret = {'status':'OK'}
+	return JsonResponse(ret)
+
+
+@csrf_exempt
+def get_posts(request):
+	# gets all posts and returns them via ret['data']
+	ret = {'status':'OK'}
+	if not request.user.is_authenticated():
+		ret['error'] = "User is not logged in"
+		return JsonResponse(ret)
+	else:
+		ret['data'] = []
+		posts = Post.objects.all()
+		for p in posts:
+			ret['data'].append({	'post_type':p.post_type.name,
+									'author': p.author.first_name,
+									'id': p.author.id,
+									'text': p.text,
+									'date': p.published_date			
+								})
+	return JsonResponse(ret)
+
+
+@csrf_exempt
+def get_post_types(request):
+	ret = {'status':'OK', 'data':[]}
+	types = PostType.objects.all()
+	for t in types:
+		ret['data'].append({
+								'id': t.id,
+								'name': t.name
+							})
+	return JsonResponse(ret)
+
+@csrf_exempt
+def follow(request):
+	ret = {'status':'FAIL'}
+	# check these two aren't already coupled
+	return
