@@ -125,6 +125,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 LOGIN_URL = '/login/'
+AUTH_PROFILE_MODULE = 'donkidik.UserProfile'
 
 LOGGING = {
     'version': 1,

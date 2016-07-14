@@ -5,3 +5,17 @@
 - should the urls end with / or not?
 - all api's start with status = FAIL. is that really necessary if there is no handling for FAILING? (example api.get_post_types)
 - csrf fucking tokens. take them off globally!
+- added some logging text to settings. need to go over it
+- what happens to posts when a user is deleted
+- consider adding this to models:
+			from django.db.models import signals
+			from donkidik.models import UserProfile
+
+
+
+			def create_user_profile(sender, instance, created, **kwargs):
+			    if created:
+			        UserProfile.objects.create(user=instance)
+
+
+			signals.post_save.connect(create_user_profile, sender=User)
