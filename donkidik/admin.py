@@ -2,6 +2,10 @@ from django.contrib import admin
 from donkidik.models import *
 
 
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    pass
+
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     pass

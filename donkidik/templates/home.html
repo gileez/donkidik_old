@@ -14,31 +14,54 @@
 		#main .add_post #post_state{color:red; font-size: 12px}
 		#main .post_list, #main .add_post{width:33%; min-width: 300px; position:relative; left: 33.3%;}
 		#main .post_list .post{border: solid 1px; font-size: 16px; margin-top:10px;}
+		#main .post_list .post .user{display:inline-block;margin-left: 5px;}
+		#main .post_list .post .timestamp{display:inline-block; float:right; margin-right: 5px;}
 		#main .post_list .post .Report{background: teal; color:white;}
 		#main .post_list .post .General{background: orange; color:white;}
-		#main .post_list .post .text{margin: 5px;}
+		#main .post_list .post .text{display: block; margin: 5px;}
 		#main .post_list .post a{color: white;}
 		#main .post_list .post a:hover{color: teal; background: white;}
 
 	</style>
-	
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/0.9.78/jsrender.min.js"></script>
+	<script id="post" type="text/x-jsrender">
+		<div class="post">
+			<div class="[[:post_type]]">
+				<div class="user">
+					[[:post_type]] by <a href="user/[[:author.id]]/">[[:author.name]]</a>
+				</div>
+				<div class="timestamp">
+					[[:date[0] ]]/[[:date[1] ]]/[[:date[2] ]]
+				</div>
+			</div>
+			<div class="text">
+				[[:text]]
+			</div>
+		</div>
+	</script>
+	<script id="select" type="text/x-jsrender">
+		<option vlue="[[:id]]">[[:name]]</option>
+	</script>
+
 	<script type="text/javascript">
 		$(document).ready(function(){
+			$.views.settings.delimiters("[[","]]");
 			//get all posts
 			var selected_id = 1;
 			function refresh_posts(){
 				$.post("api/posts/all/", function(res){
-					var $post_list = $(".post_list"),
-						pl_html = '';
-					for (var i=res.data.length-1; i>-1; i--){
-						pl_html+="<div class=\"post\"><div class=\"" + res.data[i].post_type + "\">" + res.data[i].post_type +" by <a href=\"api/posts/" + res.data[i].id + "/\">"+ res.data[i].author.name + "</a></div><div class=\"text\">" + res.data[i].text + "</div></div>"
-					}
+					var postTemplate = $.templates("#post");
+					var $post_list = $(".post_list");
+					var pl_html = postTemplate.render(res.data);
+					// for (var i=res.data.length-1; i>-1; i--){
+					// 	pl_html+="<div class=\"post\"><div class=\"" + res.data[i].post_type + "\">" + res.data[i].post_type +" by <a href=\"api/posts/" + res.data[i].id + "/\">"+ res.data[i].author.name + "</a></div><div class=\"text\">" + res.data[i].text + "</div></div>"
+					// }
 					$post_list.html(pl_html);
 				});//end $.post
 			}
 			//get all post types
 			$.post("api/post/types/",function(res){
-				var $post_types = $(".types ul"),
+				var $post_types = $(".types ul").first(),
 					ptypes = '';
 				for (var i=0; i<res.data.length ; i++){
 					ptypes+="<li id=\""+ res.data[i].id + "\">"+ res.data[i].name + "</li>";
@@ -48,17 +71,45 @@
 				$(".types ul li").first().addClass("selected");
 
 			});//end $.post
-
+			//get all spots
+			$.post("api/spots/get/",function(res){
+				var $select = $(".spot select").first();
+				var selectTemplate = $.templates("#select");
+				var sel_html = selectTemplate.render(res.data);
+				var empty_option = "<option disabled selected value> -- Spot -- </option>";
+				$select.html(empty_option + sel_html);
+			});
+			//populate knots select
+			var $knots_sel = $(".knots select");
+			$knots_sel.html("<option disabled selected value> -- Knots -- </option>")
+			for (i=1;i<=40;i++){
+				$knots_sel.append($('<option></option>').val(i).html(i));
+			}
 			//listen to changes on selected post type
 			$(document).on('click','.types ul li',function(){
 				console.log("click");
 				$(".types ul li").removeClass("selected");
 				$(this).addClass("selected");
-				selected_id = $(this).attr("id");
+				var selected_id = $(this)[0].id;
+				var selected_name = $(this).html();
+				if (selected_name == 'General'){
+					$('#post_text').show();
+					$('.knots').hide();
+					$('.spot').hide();
+				}
+				else if (selected_name == 'Report'){
+					$('#post_text').show();
+					$('.knots').show();
+					$('.spot').show();
+				}
+				else {
+					$('#post_text').hide();
+					$('.knots').hide();
+					$('.spot').hide();
+				}
 			});
 
 			$("#submit_post").click(function(){
-
 				data={	'text': $("#post_text").val(),
 						'post_type':selected_id
 						}
@@ -89,12 +140,20 @@
 	<div id="main">
 		<div class="add_post">
 			<div class="types">
-			<ul></ul>
+				<ul></ul>
 			</div>
 			<div class="post_content">
-			<input type="text" id="post_text" placeholder="let us know!" />
-			<input type="button" id="submit_post" value="post"/>
-			<div id="post_state"></div>
+				<input type="text" id="post_text" placeholder="let us know!" />
+				<input type="button" id="submit_post" value="post"/>
+				<div class="spot">
+					<select>
+					</select>
+				</div>
+				<div class="knots">
+					<select>
+					</select>
+				</div>
+				<div id="post_state"></div>
 			</div>
 		</div>
 		<div class="post_list">

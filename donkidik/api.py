@@ -79,7 +79,7 @@ def create_post(request):
 			print "not staff"
 			today_min = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
 			today_max = datetime.datetime.combine(datetime.date.today(), datetime.time.max)
-			posts = Post.objects.filter(author=request.user, published_date__range=(today_min, today_max))
+			posts = Post.objects.filter(author=request.user, date__range=(today_min, today_max))
 			print "total posts %d" %len(posts)
 			if len(posts) > 2:
 				ret['error'] = "You have exceeded your post limit for today"
@@ -87,7 +87,7 @@ def create_post(request):
 		data = request.POST
 		uid = int(request.user.id)
 		post_type = int(data.get('post_type'))
-		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, published_date=datetime.datetime.now())
+		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, date=datetime.datetime.now())
 		p.save()
 		ret = {'status':'OK'}
 	return JsonResponse(ret)
@@ -103,12 +103,13 @@ def get_posts(request):
 	else:
 		ret['data'] = []
 		posts = Post.objects.all()
-		for p in posts:
+		for p in reversed(posts):
 			ret['data'].append(p.jsonify())
 	return JsonResponse(ret)
 
 
 @csrf_exempt
+@login_required
 def get_post_types(request):
 	ret = {'status':'OK', 'data':[]}
 	types = PostType.objects.all()
@@ -120,7 +121,47 @@ def get_post_types(request):
 	return JsonResponse(ret)
 
 @csrf_exempt
-def follow(request):
+@login_required
+def get_spots(request):
+	ret = {'status':'OK', 'data':[]}
+	spots = Spot.objects.all()
+	for s in spots:
+		ret['data'].append({
+								'id': s.id,
+								'name': s.name
+							})
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def follow(request, uid):
 	ret = {'status':'FAIL'}
+	to_follow = User.objects.filter(id=uid)[0]
+	if not to_follow:
+		ret['error'] = "Unable to find user to follow"
+		return JsonResponse(ret)
 	# check these two aren't already coupled
-	return
+	if request.user.profile.follows.filter(user_id=uid).count() > 0:
+		# already following
+		ret['error'] = "Made a follow request on someone you're already following"
+		return JsonResponse(ret)
+	UserProfile.objects.filter(user=request.user)[0].follows.add(to_follow.profile)
+	ret['status']=['OK']
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def unfollow(request, uid):
+	ret = {'status':'FAIL'}
+	to_unfollow = User.objects.filter(id=uid)[0]
+	if not to_unfollow:
+		ret['error'] = "Unable to find user to follow"
+		return JsonResponse(ret)
+	# check these two are already coupled
+	if not request.user.profile.follows.filter(user_id=uid):
+		# not following...can't unfollow
+		ret['error'] = "Cant unfollow someone you're not following"
+		return JsonResponse(ret)
+	UserProfile.objects.filter(user=request.user)[0].follows.remove(to_unfollow.profile)
+	ret['status']=['OK']
+	return JsonResponse(ret)

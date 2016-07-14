@@ -32,4 +32,10 @@ urlpatterns = [
     url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
     url(r'api/posts/all/$', api.get_posts),
     url(r'api/post/types/$', api.get_post_types),
+    url(r'api/spots/get/$', api.get_spots),
+    # follow
+    url(r'api/user/(?P<uid>[0-9]+)/follow/$', api.follow),
+    # unfollow
+    url(r'api/user/(?P<uid>[0-9]+)/unfollow/$', api.unfollow),
+
 ]

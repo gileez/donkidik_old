@@ -1,12 +1,12 @@
-- login_required does not check user is_active
+- have a bunch of Users with no user profile. what to do?
 - do not understand the next mechanism. at what point is the browser suppose to go there?
 - do i care about class based views?
 - in flask i worked with sessions. where are they here?
 - should the urls end with / or not?
 - all api's start with status = FAIL. is that really necessary if there is no handling for FAILING? (example api.get_post_types)
-- csrf fucking tokens. take them off globally!
+
 - added some logging text to settings. need to go over it
-- what happens to posts when a user is deleted
+- figure out on_delete and set properly
 - consider adding this to ?. when creating a user automatically create a user profile:
 			from django.db.models import signals
 			from donkidik.models import UserProfile
@@ -19,3 +19,7 @@
 
 
 			signals.post_save.connect(create_user_profile, sender=User)
+
+for production:
+- login_required does not check user is_active
+- csrf fucking tokens. take them off globally!

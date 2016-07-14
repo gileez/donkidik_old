@@ -11,7 +11,7 @@ class Post(models.Model):
     author = models.ForeignKey('auth.User', related_name='posts')
     post_type = models.ForeignKey('PostType')
     text = models.TextField()
-    published_date = models.DateTimeField(blank=True, null=True)
+    date = models.DateTimeField(default=timezone.now)
     # TODO: add image, video
 
     def jsonify(self):
@@ -21,11 +21,11 @@ class Post(models.Model):
                                 'id': self.author.id
                                 },
                     'text': self.text,
-                    'date': self.published_date
+                    'date': [self.date.day,self.date.month,self.date.year],
+                    'time': [self.date.hour,self.date.minute,self.date.second]
                 }
         if hasattr(self,'meta'):
             # there is a meta record for this post
-            print "working on post id %s and the spot is %s" %(self.id, hasattr(self.meta, 'spot'))
             ret.update({    'knots': self.meta.knots,
                             'gust': self.meta.gust,
                             'spot': self.meta.spot.name if hasattr(self.meta, 'spot') and self.meta.spot else None,
@@ -51,7 +51,7 @@ class PostMeta(models.Model):
         return "< PostMeta for post %s>" %self.post.id 
 
 class Spot(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     #location
     #country
     def __str__(self):
