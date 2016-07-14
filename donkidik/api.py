@@ -20,9 +20,7 @@ def signup(request):
 	email = data['email']
 	pw = data['password']
 	name = data['name']
-	new_user = User.objects.create_user(username=username, email=email, password=pw, first_name=name)
-	if new_user:
-		new_user.save()
+	if User.objects.create_user(username=username, email=email, password=pw, first_name=name):
 		#attempt login
 		user = authenticate(username=username,password=pw)
 		if user is not None:
@@ -106,12 +104,7 @@ def get_posts(request):
 		ret['data'] = []
 		posts = Post.objects.all()
 		for p in posts:
-			ret['data'].append({	'post_type':p.post_type.name,
-									'author': p.author.first_name,
-									'id': p.author.id,
-									'text': p.text,
-									'date': p.published_date			
-								})
+			ret['data'].append(p.jsonify())
 	return JsonResponse(ret)
 
 

@@ -31,7 +31,7 @@
 					var $post_list = $(".post_list"),
 						pl_html = '';
 					for (var i=res.data.length-1; i>-1; i--){
-						pl_html+="<div class=\"post\"><div class=\"" + res.data[i].post_type + "\">" + res.data[i].post_type +" by <a href=\"api/posts/" + res.data[i].id + "/\">"+ res.data[i].author + "</a></div><div class=\"text\">" + res.data[i].text + "</div></div>"
+						pl_html+="<div class=\"post\"><div class=\"" + res.data[i].post_type + "\">" + res.data[i].post_type +" by <a href=\"api/posts/" + res.data[i].id + "/\">"+ res.data[i].author.name + "</a></div><div class=\"text\">" + res.data[i].text + "</div></div>"
 					}
 					$post_list.html(pl_html);
 				});//end $.post
