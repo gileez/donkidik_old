@@ -87,7 +87,6 @@
 			}
 			//listen to changes on selected post type
 			$(document).on('click','.types ul li',function(){
-				console.log("click");
 				$(".types ul li").removeClass("selected");
 				$(this).addClass("selected");
 				var selected_id = $(this)[0].id;
@@ -110,9 +109,26 @@
 			});
 
 			$("#submit_post").click(function(){
-				data={	'text': $("#post_text").val(),
-						'post_type':selected_id
+				var errors=[]
+				var data={	'text': $("#post_text").val(),
+						'post_type':selected_id,
+						'type_name': $(".types .selected").html(),
 						}
+				if (data.type_name == 'Report'){
+					var knots = $(".knots").find(":selected").val();
+					var spot = $(".spot").find(":selected").val();
+					if (knots == "") errors.push("Missing wind speed!");
+					if (spot == "") errors.push("Missing spot!");
+					if (errors.length == 0){
+						data.knots = Number(knots);
+						data.spot_name = spot;
+					}
+
+				}
+				if (errors.length > 0){
+					$('#post_state').html(errors.join("</br>"));
+					return
+				}
 				$.post("api/post/add/", data, function(res){
 					if (res.status == 'OK'){
 						$("#post_text").val('');

@@ -89,7 +89,18 @@ def create_post(request):
 		post_type = int(data.get('post_type'))
 		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, date=datetime.datetime.now())
 		p.save()
-		ret = {'status':'OK'}
+		if data['type_name'] == 'General':
+			ret = {'status':'OK'}
+		elif data['type_name'] == 'Report':
+			spot_name = data['spot_name']
+			spot = Spot.objects.filter(name=spot_name)[0]
+			if not spot:
+				ret['error']="No such spot found in DB"
+			else:
+				knots = data['knots']
+				p_meta = PostMeta.objects.create(post=p,knots=knots,spot=spot)
+				#p_meta.save() 
+				ret = {'status':'OK'}
 	return JsonResponse(ret)
 
 
