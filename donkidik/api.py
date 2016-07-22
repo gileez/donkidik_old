@@ -103,6 +103,23 @@ def create_post(request):
 				ret = {'status':'OK'}
 	return JsonResponse(ret)
 
+@csrf_exempt
+def remove_post(request, pid):
+	ret = {'status':'FAIL'}
+	if Post.object.filter(id=pid).delete():
+		ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+def update_post(request, pid):
+	ret = {'status':'FAIL'}
+	p = Post.object.filter(id=pid):
+	if p:
+		p.text = request.POST['text']
+		p.date = timezone.now()
+		p.save()
+		ret['status'] = 'OK'
+	return JsonResponse(ret)
 
 @csrf_exempt
 def get_posts(request):
@@ -176,3 +193,45 @@ def unfollow(request, uid):
 	UserProfile.objects.filter(user=request.user)[0].follows.remove(to_unfollow.profile)
 	ret['status']=['OK']
 	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def api.post_upvote(request, pid):
+	ret = {'status': 'FAIL'}
+	# TODO:
+	# make sure user has upvote permissions
+	p = Post.objects.filter(id=pid)[0]
+	if not p:
+		ret['error'] = 'post not found'
+		return JsonResponse(ret)
+	if p.votes.filter(user=request.user):
+		ret['error'] = 'user already upvoted this post'
+		return JsonResponse(ret)
+	# upvote this post
+	p.upvote(request.user)
+	# get upvote score - how many credits do we need to add based on who is making the vote
+	# call function to upvote this user
+	p.user.upvote()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def api.post_downvote(request, pid):
+	ret = {'status': 'FAIL'}
+	p = Post.objects.filter(id=pid)[0]
+	if not p:
+		ret['error'] = 'post not found'
+		return JsonResponse(ret)
+	if not p.votes.filter(user=request.user):
+		ret['error'] = 'user didnt upvote this post'
+		return JsonResponse(ret)
+	# upvote this post
+	p.downvote(request.user)
+	# TODO
+	# get downvote score - how many credits do we need to add based on who is making the vote
+	# call function to downvote this user
+	p.user.downvote()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
