@@ -95,7 +95,7 @@ def create_post(request):
 			spot_name = data['spot_name']
 			spot = Spot.objects.filter(name=spot_name)[0]
 			if not spot:
-				ret['error']="No such spot found in DB"
+				ret['error']="Spot not found"
 			else:
 				knots = data['knots']
 				p_meta = PostMeta.objects.create(post=p,knots=knots,spot=spot)
@@ -104,16 +104,33 @@ def create_post(request):
 	return JsonResponse(ret)
 
 @csrf_exempt
+@login_required
 def remove_post(request, pid):
 	ret = {'status':'FAIL'}
-	if Post.object.filter(id=pid).delete():
+	p = Post.object.get(id=pid)
+	if not p:
+		ret['error'] = 'Post not found'
+		return JsonResponse(ret)
+	# TODO check for special deletion permissions
+	if p.user.id != request.user.id:
+		ret['error'] = 'Attempting to delete OPP'
+		return JsonResponse(ret)
+	if p.delete():
 		ret['status'] = 'OK'
 	return JsonResponse(ret)
 
 @csrf_exempt
+@login_required
 def update_post(request, pid):
 	ret = {'status':'FAIL'}
-	p = Post.object.filter(id=pid):
+	p = Post.object.filter(id=pid)
+	#make sure this post belongs to this user
+	if not p:
+		ret['error'] = "Post not found"
+		return JsonResponse(ret)
+	if p.user.id != request.user.id:
+		ret['error'] = "Attempt to edit OPP"
+		return JsonResponse(ret)
 	if p:
 		p.text = request.POST['text']
 		p.date = timezone.now()
@@ -196,7 +213,7 @@ def unfollow(request, uid):
 
 @csrf_exempt
 @login_required
-def api.post_upvote(request, pid):
+def post_upvote(request, pid):
 	ret = {'status': 'FAIL'}
 	# TODO:
 	# make sure user has upvote permissions
@@ -212,12 +229,15 @@ def api.post_upvote(request, pid):
 	# get upvote score - how many credits do we need to add based on who is making the vote
 	# call function to upvote this user
 	p.user.upvote()
+	# save changes - TODO: find out if this is necessary
+	p.user.save()
+	p.save()
 	ret['status'] = 'OK'
 	return JsonResponse(ret)
 
 @csrf_exempt
 @login_required
-def api.post_downvote(request, pid):
+def post_downvote(request, pid):
 	ret = {'status': 'FAIL'}
 	p = Post.objects.filter(id=pid)[0]
 	if not p:
@@ -235,3 +255,10 @@ def api.post_downvote(request, pid):
 	ret['status'] = 'OK'
 	return JsonResponse(ret)
 
+@csrf_exempt
+@login_required
+def create_forecast(request):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to create
+	
+	return JsonResponse(ret)

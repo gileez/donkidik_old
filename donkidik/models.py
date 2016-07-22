@@ -55,7 +55,7 @@ class Post(models.Model):
     def downvote(self, voting_user):
         self.votes.remove(voting_user)
         self.score = self.score - 1 if self.score > 0 else 0
-        self.user.profile.upvote()
+        self.user.profile.downvote()
         return True
 
     def __str__(self):
@@ -105,3 +105,9 @@ class Session(models.Model):
     spot = models.ForeignKey('Spot')
     date = models.DateTimeField()
     users = models.ManyToManyField('auth.User', related_name='attending_sessions')
+    
+    
+class Forecast(models.Model):
+    user = models.ForeignKey('auth.User')
+    date = models.DateTimeField()
+    session = models.Fore

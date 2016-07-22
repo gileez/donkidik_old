@@ -43,8 +43,10 @@ urlpatterns = [
     url(r'^api/logout/$', api.logout_req),
     # add post
     url(r'api/post/add/$', api.create_post),
-    # TODO remove post
+    # remove post
     url(r'api/post/remove/(?P<uid>[0-9]+)/$', api.remove_post),
+    # update post
+    url(r'api/post/update/(?P<uid>[0-9]+)/$', api.update_post),
     # specific user posts
     url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
     # all posts
