@@ -59,28 +59,32 @@ urlpatterns = [
     url(r'api/user/(?P<uid>[0-9]+)/follow/$', api.follow),
     # unfollow
     url(r'api/user/(?P<uid>[0-9]+)/unfollow/$', api.unfollow),
+    # get followers
+    url(r'api/user/(?P<uid>[0-9]+)/followers/$', api.get_followers),
     # up vote
     url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_upvote),
     # down vote
-    url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_down_vote),
-    # TODO add forcast
+    url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_downvote),
+    # add forcast
     url(r'api/forecast/add/$', api.create_forecast),
-    # TODO remove forecast
-    url(r'api/forecast/remove/(?P<pid>[0-9]+)/$', api.remove_forecast),
-    # TODO update forcast
-    url(r'api/forecast/update/(?P<pid>[0-9]+)/$', api.update_forecast),
-    # TODO add session
+    # update forcast
+    url(r'api/forecast/update/(?P<fid>[0-9]+)/$', api.update_forecast),
+    # remove forecast
+    url(r'api/forecast/remove/(?P<fid>[0-9]+)/$', api.remove_forecast),
+    # add session
     url(r'api/session/add/$', api.create_session),
-    # TODO join session
-    url(r'api/session/join/$', api.join_session),
-    # TODO leave session
-    url(r'api/session/leave/$', api.leave_session),
-    # TODO add comment
+    # remove session
+    url(r'api/session/(?P<session_id>[0-9]+)/remove/$', api.remove_session),
+    # join session
+    url(r'api/session/(?P<session_id>[0-9]+)/join/$', api.join_session),
+    # leave session
+    url(r'api/session/(?P<session_id>[0-9]+)/leave/$', api.leave_session),
+    # add comment
     url(r'api/post/(?P<pid>[0-9]+)/add_comment/$', api.add_comment),
-    # TODO remove comment
-    url(r'api/post/(?P<pid>[0-9]+)/rem_comment/$', api.rem_comment),
-    # TODO update comment
-    url(r'api/post/(?P<pid>[0-9]+)/update_comment/$', api.update_comment),
+    # remove comment
+    url(r'api/comment/(?P<cid>[0-9]+)/rem_comment/$', api.remove_comment),
+    # update comment
+    url(r'api/comment/(?P<cid>[0-9]+)/update_comment/$', api.update_comment),
 
 
 ]

@@ -66,6 +66,7 @@ def user_posts(request,uid):
 			'data':data
 			}
 	return JsonResponse(ret)
+
 @csrf_exempt
 def create_post(request):
 	ret = {'status':'FAIL'}
@@ -213,6 +214,21 @@ def unfollow(request, uid):
 
 @csrf_exempt
 @login_required
+def get_followers(request, uid):
+	ret = {'status': 'FAIL'}
+	u = User.objects.get(id=uid)
+	if not u:
+		ret['error'] = 'Could not find user'
+		return JsonResponse(ret)
+	followers = u.profile.followed_by
+	ret['followers'] = []
+	for f in followers:
+		ret['followers'] += f.jsonify()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
 def post_upvote(request, pid):
 	ret = {'status': 'FAIL'}
 	# TODO:
@@ -259,6 +275,172 @@ def post_downvote(request, pid):
 @login_required
 def create_forecast(request):
 	ret = {'status': 'FAIL'}
-	# TODO: make sure user has proper permissions to create
-	
+	# TODO: make sure user has proper permissions to create a forecast
+	spots = request.POST['spots']
+	for t in ['text','knots','gust']:
+		if request.POST.get(t,None):
+			params[t] = request.POST[t]
+	f_date = datetime.datetime(request.POST['date'][0], request.POST['date'][1], request.POST['date'][2])
+	# TODO generate session - logic + implementation
+	f = Forecast.objects.create(user=request.user, f_date=f_date, **params)
+	# add spots to forecast - is there a way to do this within constructor?
+	spot_records = Spot.objects.filter(pk__in=spots)
+	if not spot_record:
+		ret['error'] = 'Spot ids %s not found' %spots
+		return JsonResponse(ret)
+	f.spots.add(spot_record)
+	f.save()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def update_forecast(request, fid):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to create a forecast
+	f = Forecast.objects.get(pk=fid)
+	if not f:
+		ret['error'] = 'Forecast not found'
+		return JsonResponse(ret)
+	if f.user.pk != request.user.pk:
+		ret['error'] = "Attempting to change someone else's forecast"
+		return JsonResponse(ret)
+	for t in ['text','knots','gusts']:
+		if request.POST.get(t,None):
+			setattr(f, t, request.POST[t])
+	# TODO what are the implications on sessions?
+	f.save()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def remove_forecast(request, fid):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to create a forecast
+	f = Forecast.objects.get(pk=fid)
+	if not f:
+		ret['error'] = 'Forecast not found'
+		return JsonResponse(ret)
+	if f.user.pk != request.user.pk:
+		ret['error'] = "Attempting to change someone else's forecast"
+		return JsonResponse(ret)
+	f.delete()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def create_session(request):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to create a session
+	# make sure there isn't a session going on
+	spot_id = request.POST['spot_id']
+	date = datetime.datetime(request.POST['date'][0], request.POST['date'][1], request.POST['date'][2])
+	s = Session.objects.get(spot__pk=spot_id, date=date)
+	if s:
+		ret['error'] = 'A session already exists for this date and spot'
+		ret['session_id'] = s.pk
+		return JsonResponse(ret)
+	spot = Spot.objects.get(pk=spot_id)
+	if not spot:
+		ret['error'] = 'Spot not found'
+		return JsonResponse(ret)
+	s = Session.objects.create(owner=request.user, spot=spot, date=date)
+	s.users.add(request.user)
+	s.save()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def remove_session(request, session_id):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to remove a session
+	s = Session.objects.get(pk=session_id)
+	if not s:
+		ret['error'] = 'Session not found'
+		return JsonResponse(ret)
+	if s.user.pk != request.user.pk:
+		ret['error'] = "Attempting to change someone else's forecast"
+		return JsonResponse(ret)
+	s.delete()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def join_session(request, session_id):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to join this session
+	s = Session.objects.get(pk=session_id)
+	if not s:
+		ret['error'] = 'Session not found'
+		return JsonResponse(ret)
+	s.users.add(request.user)
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def leave_session(request, session_id):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to join this session
+	s = Session.objects.get(pk=session_id)
+	if not s:
+		ret['error'] = 'Session not found'
+		return JsonResponse(ret)
+	s.users.remove(request.user)
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def add_comment(request, pid):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to comment
+	text = request.POST['text']
+	p = Post.objects.get(pk=pid)
+	if not p:
+		ret['error'] = 'Post not found'
+		return JsonResponse(ret)
+	c = Comment.objects.create(user=request.user,date=timezone.now(), text=text)
+	c.save()
+	p.comments.add(c)
+	p.save()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def remove_comment(request, cid):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to comment
+	c = Comment.objects.get(pk=cid)
+	if not c:
+		ret['error'] = 'Comment not found'
+		return JsonResponse(ret)
+	if c.user != request.user:
+		ret['error'] = 'Attempt to remove comment that isnt yours'
+		return JsonResponse(ret)
+	c.delete()
+	ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def update_comment(request, cid):
+	ret = {'status': 'FAIL'}
+	# TODO: make sure user has proper permissions to comment
+	c = Comment.objects.get(pk=cid)
+	if not c:
+		ret['error'] = 'Comment not found'
+		return JsonResponse(ret)
+	if c.user != request.user:
+		ret['error'] = 'Attempt to remove comment that isnt yours'
+		return JsonResponse(ret)
+	c.text = request.POST.get('text')
+	c.date = timezone.now()
+	c.save()
+	ret['status'] = 'OK'
 	return JsonResponse(ret)

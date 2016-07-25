@@ -19,6 +19,9 @@
 
 
 			signals.post_save.connect(create_user_profile, sender=User)
+- think about: how does a forecast work? per spot? has several spots? automatically creates a session?
+- what are the conditions to auto create a session? this is an issue for both forecasts and reports. a report of 0 wind for example should not generate a session. maybe add a "rideable" flag to the report?
+
 
 for production:
 - login_required does not check user is_active
