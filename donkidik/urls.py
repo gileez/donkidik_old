@@ -60,15 +60,15 @@ urlpatterns = [
     # unfollow
     url(r'api/user/(?P<uid>[0-9]+)/unfollow/$', api.unfollow),
     # up vote
-    url(r'api/posts/(?P<pid>[0-9]+)/up', api.post_upvote),
+    url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_upvote),
     # down vote
-    url(r'api/posts/(?P<pid>[0-9]+)/up', api.post_down_vote),
+    url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_down_vote),
     # TODO add forcast
     url(r'api/forecast/add/$', api.create_forecast),
     # TODO remove forecast
-    url(r'api/forecast/remove/(?P<pid>[0-9]+)$', api.remove_forecast),
+    url(r'api/forecast/remove/(?P<pid>[0-9]+)/$', api.remove_forecast),
     # TODO update forcast
-    url(r'api/forecast/update/(?P<pid>[0-9]+)$', api.update_forecast),
+    url(r'api/forecast/update/(?P<pid>[0-9]+)/$', api.update_forecast),
     # TODO add session
     url(r'api/session/add/$', api.create_session),
     # TODO join session
