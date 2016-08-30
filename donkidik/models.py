@@ -47,8 +47,9 @@ class Post(models.Model):
                     'text': self.text,
                     'date': [ self.date.day,self.date.month,self.date.year],
                     'time': [ self.date.hour,self.date.minute,self.date.second],
-                    'comments': [ c.jsonify() for c in self.comments ],
+                    'comments': [ c.jsonify() for c in self.comments.all() ],
                     'score':self.score,
+                    'post_id':self.pk,
                 }
         if hasattr(self,'meta'):
             # there is a meta record for this post
@@ -100,7 +101,9 @@ class Comment(models.Model):
                     'text': self.text,
                     'date': [self.date.day,self.date.month,self.date.year],
                     'time': [self.date.hour,self.date.minute,self.date.second],
-                    'user': self.user,
+                    'user': self.user.first_name,
+                    'user_id': self.user.pk,
+                    'comment_id': self.pk,
                     }
         return comment
 

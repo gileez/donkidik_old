@@ -400,6 +400,9 @@ def add_comment(request, pid):
 	ret = {'status': 'FAIL'}
 	# TODO: make sure user has proper permissions to comment
 	text = request.POST['text']
+	if not text:
+		ret['error'] = 'Comment must have text'
+		return JsonResponse(ret)
 	p = Post.objects.get(pk=pid)
 	if not p:
 		ret['error'] = 'Post not found'

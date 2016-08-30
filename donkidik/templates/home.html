@@ -2,30 +2,41 @@
 
 {% block head %}
 	<style type="text/css">
+		style{display:block !important;}
 		#main input[type="text"], #main input[type="name"], #main input[type="password"]{margin:5px 0; padding: 5px;}
 
 		#main {display:block; position: absolute;width:100%;}
-		#main .add_post{padding: 20px 0; padding-bottom: 10px;}
-		#main .add_post .types{color: black; background:none;}
-		#main .add_post .types ul{list-style: none; padding:0; margin:0;}
-		#main .add_post .types ul li{display:inline; padding: 5px;}
-		#main .add_post .types ul li:hover{color:white; background: grey;}
-		#main .add_post .types .selected, #main .add_post .types .selected:hover{color:white; background: black;}
-		#main .add_post #post_state{color:red; font-size: 12px}
-		#main .post_list, #main .add_post{width:33%; min-width: 300px; position:relative; left: 33.3%;}
-		#main .post_list .post{border: solid 1px; font-size: 16px; margin-top:10px;}
-		#main .post_list .post .user{display:inline-block;margin-left: 5px;}
-		#main .post_list .post .timestamp{display:inline-block; float:right; margin-right: 5px;}
-		#main .post_list .post .Report{background: teal; color:white;}
-		#main .post_list .post .General{background: orange; color:white;}
-		#main .post_list .post .text{display: block; margin: 5px;}
-		#main .post_list .post a{color: white;}
-		#main .post_list .post a:hover{color: teal; background: white;}
-
+		#main .add_post {padding: 20px 0; padding-bottom: 10px;}
+		#main .add_post .types {color: black; background:none;}
+		#main .add_post .types ul {list-style: none; padding:0; margin:0;}
+		#main .add_post .types ul li {display:inline; padding: 5px;}
+		#main .add_post .types ul li:hover {color:white; background: grey;}
+		#main .add_post .types .selected, #main .add_post .types .selected:hover {color:white; background: black;}
+		#main .add_post #post_state {color:red; font-size: 12px}
+		#main .post_list, #main .add_post {width:33%; min-width: 300px; position:relative; left: 33.3%;}
+		#main .post_list .post {border: solid 1px; font-size: 16px; margin-top:10px;}
+		#main .post_list .post .user {display:inline-block;margin-left: 5px;}
+		#main .post_list .post .timestamp {display:inline-block; float:right; margin-right: 5px;}
+		#main .post_list .post .Report {background: teal; color:white;}
+		#main .post_list .post .General {background: orange; color:white;}
+		#main .post_list .post .text {display: block; margin: 5px;}
+		#main .post_list .post a {color: white;}
+		#main .post_list .post a:hover {color: teal; background: white;}
+		
+		.post {padding: 10px;}
+		.post .user {font-weight: bold;}
+		.post .post_text {padding: 10px;}
+		.post .comment_text {padding: 5px;}
+		.post .comment .user, .post .comment .comment_text {display: inline-block;}
+		.post .actions {border-top: solid 1px; border-bottom: solid 1px; margin:0;padding:0;}
+		.comment_container { margin: 5px; background-color:#f6f7f9;  font-size: 15px}
+		.actions {}
+		.glyphicon {font-size: 15px; padding: 5px 10px;}
+		.glyphicon:hover {color:teal; background:black;}
 	</style>
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/0.9.78/jsrender.min.js"></script>
+	
 	<script id="post" type="text/x-jsrender">
-		<div class="post">
+		<div class="post" id="[[:post_id]]">
 			<div class="[[:post_type]]">
 				<div class="user">
 					[[:post_type]] by <a href="user/[[:author.id]]/">[[:author.name]]</a>
@@ -34,8 +45,30 @@
 					[[:date[0] ]]/[[:date[1] ]]/[[:date[2] ]]
 				</div>
 			</div>
-			<div class="text">
+			<div class="post_text">
 				[[:text]]
+			</div>
+			<div class="actions">
+  				<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+  				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+			</div>
+			[[if comments.length!=0]]
+				<div class="comment_container">
+				[[for comments]]
+					<div class="comment">
+						<div class="user" id="[[:user_id]]">
+							[[:user]]
+						</div>
+						<div class="comment_text">
+							[[:text]]
+						</div>
+					</div>
+				[[/for]]
+				</div>
+			[[/if]]
+			<div class="new_comment">
+				<input type="text" class="form-control new_comment_text" placeholder="Comment..." />
+				<input type="button" class="btn btn-default submit_comment" value="Add"/>
 			</div>
 		</div>
 	</script>
@@ -43,6 +76,7 @@
 		<option vlue="[[:id]]">[[:name]]</option>
 	</script>
 
+	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/0.9.78/jsrender.min.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
 			$.views.settings.delimiters("[[","]]");
@@ -147,6 +181,26 @@
 				refresh_posts();
 			});// end submit_post click
 			
+			$(document).on('click','.submit_comment',function(){
+				//get pid
+				var p = this.closest(".post");
+				var pid = p.id;
+				//get data
+				var $text_input = $(p).find(".new_comment_text")[0];
+				var text =$text_input.value;
+				if (text==''){
+					alert("can't comment with no text")
+					return
+				}
+				var data = {'text': text};
+				//alert(data,pid);
+				$.post("api/post/"+pid+"/add_comment/", data, function(res){
+					if (res.status == 'OK'){
+						$text_input.value='';
+						refresh_posts();
+					}
+				});//end $.post
+			}); //end add_comment click
 			refresh_posts();
 		});//end documentready
 
@@ -160,7 +214,7 @@
 			</div>
 			<div class="post_content">
 				<input type="text" id="post_text" placeholder="let us know!" />
-				<input type="button" id="submit_post" value="post"/>
+				<input type="button" class="btn btn-default" id="submit_post" value="post"/>
 				<div class="spot">
 					<select>
 					</select>
