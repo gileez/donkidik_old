@@ -399,6 +399,10 @@ def leave_session(request, session_id):
 def add_comment(request, pid):
 	ret = {'status': 'FAIL'}
 	# TODO: make sure user has proper permissions to comment
+	print "addcomment"
+	print request.POST.keys()
+	print dir(request)
+	print "after"
 	text = request.POST['text']
 	if not text:
 		ret['error'] = 'Comment must have text'

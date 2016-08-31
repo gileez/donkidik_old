@@ -23,6 +23,17 @@
 - what are the conditions to auto create a session? this is an issue for both forecasts and reports. a report of 0 wind for example should not generate a session. maybe add a "rideable" flag to the report?
 
 
+
+========================
+ANGULAR
+=======================
+- should i move all functionality to angular? for example making a new post. it only appears in ui once. what is the benefit?
+- correct way to handle callbacks: then \ success \ error
+- should i avoid pulling stuff from the db? if i make a new post should it be brought back from db or just populate ui?
+- where do i insert the serialization code so that i don't need to copy paste it to every single html file?
+
+
+
 for production:
 - login_required does not check user is_active
 - csrf fucking tokens. take them off globally!

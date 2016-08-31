@@ -10,6 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+
+
+
+'''
+*********************************************************
+            DEVELOP ADMIN gili | something for eva
+*********************************************************
+'''
+
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

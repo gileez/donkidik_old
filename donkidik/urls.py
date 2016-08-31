@@ -29,7 +29,7 @@ urlpatterns = [
     # TODO edit user profile
     #url(r'^user/profile/$', views.userProfile),
     # TODO specific spot
-    #url(r'^spot/(?P<sp_id>[0-9]+)/$', views.userProfile),
+    #url(r'^spot/(?P<sp_id>[0-9]+)/$', views.spot),
     # TODO session
     #url(r'^session/(?P<se_id>[0-9]+)$', views.session),
     # TODO all sessions

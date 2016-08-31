@@ -56,6 +56,7 @@ class Post(models.Model):
             ret.update({    'knots': self.meta.knots,
                             'gust': self.meta.gust,
                             'spot': self.meta.spot.name if hasattr(self.meta, 'spot') and self.meta.spot else None,
+                            'spot_id': self.meta.spot.pk if hasattr(self.meta, 'spot') and self.meta.spot else None,
                             'action_date': self.meta.date
                         })
         return ret
