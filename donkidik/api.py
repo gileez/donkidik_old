@@ -87,6 +87,7 @@ def create_post(request):
 				return JsonResponse(ret)
 		data = request.POST
 		uid = int(request.user.id)
+		print "post type is %s" %data.get('post_type')
 		post_type = int(data.get('post_type'))
 		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, date=datetime.datetime.now())
 		p.save()
@@ -107,13 +108,14 @@ def create_post(request):
 @csrf_exempt
 @login_required
 def remove_post(request, pid):
+	pid = int(pid)
 	ret = {'status':'FAIL'}
-	p = Post.object.get(id=pid)
+	p = Post.objects.get(id=pid)
 	if not p:
 		ret['error'] = 'Post not found'
 		return JsonResponse(ret)
 	# TODO check for special deletion permissions
-	if p.user.id != request.user.id:
+	if p.author.id != request.user.id or not request.user.is_superuser:
 		ret['error'] = 'Attempting to delete OPP'
 		return JsonResponse(ret)
 	if p.delete():
@@ -124,12 +126,12 @@ def remove_post(request, pid):
 @login_required
 def update_post(request, pid):
 	ret = {'status':'FAIL'}
-	p = Post.object.filter(id=pid)
+	p = Post.objects.filter(id=pid)
 	#make sure this post belongs to this user
 	if not p:
 		ret['error'] = "Post not found"
 		return JsonResponse(ret)
-	if p.user.id != request.user.id:
+	if p.author.id != request.user.id:
 		ret['error'] = "Attempt to edit OPP"
 		return JsonResponse(ret)
 	if p:
@@ -148,7 +150,7 @@ def get_posts(request):
 		return JsonResponse(ret)
 	else:
 		ret['data'] = []
-		posts = Post.objects.all()
+		posts = Post.objects.all().order_by('modified')
 		for p in reversed(posts):
 			ret['data'].append(p.jsonify())
 	return JsonResponse(ret)
@@ -231,22 +233,22 @@ def get_followers(request, uid):
 @login_required
 def post_upvote(request, pid):
 	ret = {'status': 'FAIL'}
-	# TODO:
-	# make sure user has upvote permissions
+	# TODO: make sure user has upvote permissions
+	pid = int(pid)
 	p = Post.objects.filter(id=pid)[0]
 	if not p:
 		ret['error'] = 'post not found'
 		return JsonResponse(ret)
-	if p.votes.filter(user=request.user):
+	'''if p.votes.filter(id=request.user.pk):
 		ret['error'] = 'user already upvoted this post'
-		return JsonResponse(ret)
+		return JsonResponse(ret)'''
 	# upvote this post
-	p.upvote(request.user)
+	ret['change_score'] = 1 if p.upvote(request.user) else -1
 	# get upvote score - how many credits do we need to add based on who is making the vote
 	# call function to upvote this user
-	p.user.upvote()
+	#p.author.upvote()
 	# save changes - TODO: find out if this is necessary
-	p.user.save()
+	#p.author.save()
 	p.save()
 	ret['status'] = 'OK'
 	return JsonResponse(ret)
@@ -255,19 +257,18 @@ def post_upvote(request, pid):
 @login_required
 def post_downvote(request, pid):
 	ret = {'status': 'FAIL'}
+	pid = int(pid)
 	p = Post.objects.filter(id=pid)[0]
 	if not p:
 		ret['error'] = 'post not found'
 		return JsonResponse(ret)
-	if not p.votes.filter(user=request.user):
-		ret['error'] = 'user didnt upvote this post'
-		return JsonResponse(ret)
 	# upvote this post
-	p.downvote(request.user)
+	ret['change_score'] = -1 if p.downvote(request.user) else 1
+	p.save()
 	# TODO
 	# get downvote score - how many credits do we need to add based on who is making the vote
 	# call function to downvote this user
-	p.user.downvote()
+	#p.author.downvote()
 	ret['status'] = 'OK'
 	return JsonResponse(ret)
 
@@ -399,10 +400,6 @@ def leave_session(request, session_id):
 def add_comment(request, pid):
 	ret = {'status': 'FAIL'}
 	# TODO: make sure user has proper permissions to comment
-	print "addcomment"
-	print request.POST.keys()
-	print dir(request)
-	print "after"
 	text = request.POST['text']
 	if not text:
 		ret['error'] = 'Comment must have text'
@@ -414,6 +411,7 @@ def add_comment(request, pid):
 	c = Comment.objects.create(user=request.user,date=timezone.now(), text=text)
 	c.save()
 	p.comments.add(c)
+	p.modified = timezone.now()
 	p.save()
 	ret['status'] = 'OK'
 	return JsonResponse(ret)

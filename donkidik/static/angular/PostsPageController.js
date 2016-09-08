@@ -1,6 +1,5 @@
 angular.module('DonkidikApp')
 	.controller('PostsPageController', function($scope, postsService){
-		console.log('in controller');
 		// properties
 		$scope.posts = [];
 		$scope.types = [];
@@ -32,7 +31,68 @@ angular.module('DonkidikApp')
 					alert("something went wrong...");
 				}
 			});
-		}
+		};
+
+		$scope.remove_post = function(pid){
+			postsService.remove_post(pid).then(function(res){
+				if (res.status=='OK'){
+					$scope.get_posts_from_server();
+				}
+				else{
+					// TODO communicate this to UI
+					if (res.error) alert(res.error);
+					else alert("something went wrong...");
+				}
+			});
+		};
+
+		$scope.post_upvote = function(post,uid){
+			postsService.post_upvote(post.post_id).then(function(res){
+				if (res.status=='OK'){
+					// TODO disable this button
+					post.score += res.change_score;
+					if (res.change_score == 1){
+						var i = post.downvotes.indexOf(uid);
+						if (i >-1) post.downvotes.splice(i,1);
+						else post.upvotes.push(uid);
+					}
+					else{
+						var i = post.upvotes.indexOf(uid);
+						if (i >-1) post.upvotes.splice(i,1);
+						else post.downvotes.push(uid);
+					}
+				}
+				else{
+					// TODO communicate this to UI
+					if (res.error) alert(res.error);
+					else alert("something went wrong...");
+				}
+			});
+		};
+
+		$scope.post_downvote = function(post,uid){
+			postsService.post_downvote(post.post_id).then(function(res){
+				if (res.status=='OK'){
+					// TODO disable this button
+					post.score += res.change_score;
+					if (res.change_score == 1){
+						var i = post.downvotes.indexOf(uid);
+						if (i >-1) post.downvotes.splice(i,1);
+						else post.upvotes.push(uid);
+					}
+					else{
+						var i = post.upvotes.indexOf(uid);
+						if (i >-1) post.upvotes.splice(i,1);
+						else post.downvotes.push(uid);
+					}
+				}
+				else{
+					// TODO communicate this to UI
+					if (res.error) alert(res.error);
+					else alert("something went wrong...");
+				}
+			});
+		};
 
 		$scope.change_more = function(post){
 			if (post.more){

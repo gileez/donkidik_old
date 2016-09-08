@@ -44,9 +44,9 @@ urlpatterns = [
     # add post
     url(r'api/post/add/$', api.create_post),
     # remove post
-    url(r'api/post/remove/(?P<uid>[0-9]+)/$', api.remove_post),
+    url(r'api/post/remove/(?P<pid>[0-9]+)/$', api.remove_post),
     # update post
-    url(r'api/post/update/(?P<uid>[0-9]+)/$', api.update_post),
+    url(r'api/post/update/(?P<pid>[0-9]+)/$', api.update_post),
     # specific user posts
     url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
     # all posts
@@ -62,9 +62,9 @@ urlpatterns = [
     # get followers
     url(r'api/user/(?P<uid>[0-9]+)/followers/$', api.get_followers),
     # up vote
-    url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_upvote),
+    url(r'api/post/(?P<pid>[0-9]+)/upvote/$', api.post_upvote),
     # down vote
-    url(r'api/posts/(?P<pid>[0-9]+)/up/$', api.post_downvote),
+    url(r'api/post/(?P<pid>[0-9]+)/downvote/$', api.post_downvote),
     # add forcast
     url(r'api/forecast/add/$', api.create_forecast),
     # update forcast

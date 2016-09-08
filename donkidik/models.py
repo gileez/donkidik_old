@@ -34,7 +34,9 @@ class Post(models.Model):
     post_type = models.ForeignKey('PostType')
     text = models.TextField()
     date = models.DateTimeField(default=timezone.now)
-    votes = models.ManyToManyField('auth.User', related_name='voted_posts')
+    modified = models.DateTimeField(default=timezone.now)
+    upvotes = models.ManyToManyField('auth.User', related_name='upvoted_posts')
+    downvotes = models.ManyToManyField('auth.User', related_name='downvoted_posts')
     score = models.IntegerField(default=0)
     # TODO: add image, video
 
@@ -50,6 +52,8 @@ class Post(models.Model):
                     'comments': [ c.jsonify() for c in self.comments.all() ],
                     'score':self.score,
                     'post_id':self.pk,
+                    'upvotes':[ u.pk for u in self.upvotes.all() ],
+                    'downvotes':[ u.pk for u in self.downvotes.all() ]
                 }
         if hasattr(self,'meta'):
             # there is a meta record for this post
@@ -62,15 +66,36 @@ class Post(models.Model):
         return ret
 
     def upvote(self, voting_user):
-        self.votes.add(voting_user)
+        print voting_user
+        if self.upvotes.filter(pk = voting_user.pk):
+            self.upvotes.remove(voting_user)
+            self.score -= 1
+            self.author.profile.downvote()
+            return False
+        print "nope"
+        if self.downvotes.filter(pk = voting_user.pk):
+            self.downvotes.remove(voting_user)
+            self.score+=1
+            self.author.profile.upvote()
+        self.upvotes.add(voting_user)
         self.score+=1
-        self.user.profile.upvote()
+        self.author.profile.upvote()
         return True
 
     def downvote(self, voting_user):
-        self.votes.remove(voting_user)
-        self.score = self.score - 1 if self.score > 0 else 0
-        self.user.profile.downvote()
+        if self.downvotes.filter(pk = voting_user.pk):
+            self.downvotes.remove(voting_user)
+            self.score+=1
+            self.author.profile.upvote()
+            return False
+
+        if self.upvotes.filter(pk = voting_user.pk):
+            self.upvotes.remove(voting_user)
+            self.score -= 1
+            self.author.profile.downvote()
+        self.downvotes.add(voting_user)
+        self.score -= 1
+        self.author.profile.downvote()
         return True
 
     def __str__(self):

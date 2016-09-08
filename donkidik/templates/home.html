@@ -6,7 +6,7 @@
 		#main input[type="text"], #main input[type="name"], #main input[type="password"]{margin:5px 0; padding: 5px;}
 
 		#main {display:block; position: absolute;width:100%;}
-		#main .add_post {padding: 20px 0; padding-bottom: 10px;}
+		#main .add_post {padding: 20px 0; padding-bottom: 10px; height: 150px;}
 		#main .add_post .types {color: black; background:none;}
 		#main .add_post .types ul {list-style: none; padding:0; margin:0;}
 		#main .add_post .types ul li {display:inline; padding: 5px;}
@@ -31,11 +31,13 @@
 		.post .post_text {padding: 10px;}
 		.post .comment_text {padding: 5px;}
 		.post .comment .user, .post .comment .comment_text {display: inline-block;}
-		.post .actions {border-top: solid 1px; border-bottom: solid 1px; margin:0;padding:0;}
+		.post .actions {border-top: solid 1px; border-bottom: solid 1px; margin:0;padding:0; cursor: pointer;}
 		.comment_container { margin: 5px; background-color:#f6f7f9;  font-size: 15px}
 		.actions {}
 		.glyphicon {font-size: 15px; padding: 5px 10px;}
 		.glyphicon:hover {color:teal; background:black;}
+		.clickedred {font-size: 15px; padding: 5px 10px; color:red;}
+		.clickedgreen {font-size: 15px; padding: 5px 10px;color:green;}
 	</style>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.1/angular.min.js"></script>
 	<script type="text/javascript">
@@ -133,7 +135,7 @@
 			});
 			//populate knots select
 			var $knots_sel = $(".knots select");
-			$knots_sel.html("<option disabled selected value> -- Knots -- </option>")
+			$knots_sel.html("<option disabled selected value> -- Knots -- </option>");
 			for (i=1;i<=40;i++){
 				$knots_sel.append($('<option></option>').val(i).html(i));
 			}
@@ -141,7 +143,7 @@
 			$(document).on('click','.types ul li',function(){
 				$(".types ul li").removeClass("selected");
 				$(this).addClass("selected");
-				var selected_id = $(this)[0].id;
+				selected_id = $(this)[0].id;
 				var selected_name = $(this).html();
 				if (selected_name == 'General'){
 					$('#post_text').show();
@@ -159,6 +161,10 @@
 					$('.spot').hide();
 				}
 			});
+			// post button is disabled without text
+			$("#post_text").keyup(function(){
+				$("#submit_post")[0].disabled = (this.value == "");
+			});
 
 			$("#submit_post").click(function(){
 				var errors=[]
@@ -175,7 +181,6 @@
 						data.knots = Number(knots);
 						data.spot_name = spot;
 					}
-
 				}
 				if (errors.length > 0){
 					$('#post_state').html(errors.join("</br>"));
@@ -196,10 +201,12 @@
 						}
 					}
 				});//end $.post
-				refresh_posts();
+				// TODO: get rid of this bullshit
+				angular.element(document.getElementById('main')).scope().get_posts_from_server();
+				angular.element(document.getElementById('main')).scope().$apply();
 			});// end submit_post click
-		});//end documentready
 
+		});//end documentready
 	</script>
 {% endblock %}
 {% block body %}
@@ -210,8 +217,8 @@
 				<ul></ul>
 			</div>
 			<div class="post_content">
-				<input type="text" id="post_text" placeholder="let us know!" />
-				<input type="button" class="btn btn-default" id="submit_post" value="post"/>
+				<input type="text" id="post_text" placeholder="let us know!"/>
+				<input type="button" class="btn btn-default" id="submit_post" value="post" disabled="true"/>
 				<div class="spot">
 					<select>
 					</select>
@@ -238,8 +245,10 @@
 				</div>
 				<div class="post_text" ng-show="post.text">[[post.text]]</div>
 				<div class="actions">
-	  				<span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
-	  				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span>
+				Rank: [[post.score]]
+	  				<span class="glyphicon glyphicon-chevron-up" aria-hidden="true" ng-click="post_upvote(post,{{user.pk}})" ng-class="{clickedgreen: post.upvotes.indexOf({{user.pk}})!=-1 }"></span>
+	  				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true" ng-click=post_downvote(post,{{user.pk}}) ng-class="{clickedred: post.downvotes.indexOf({{user.pk}})!=-1 }"></span>
+	  				<span class="glyphicon glyphicon-remove" ng-click="remove_post(post.post_id)"></span>
 				</div>
 					<div class="comment_container" ng-show="post.comments.length && post.more" ng-repeat='comment in post.comments'>
 						<div class="comment">
@@ -265,7 +274,7 @@
 					<div class="more" ng-if="post.comments.length > 3 && post.more" ng-click="change_more(post)" cursor="pointer">Less...</div>
 					<div class="new_comment">
 					<input type="text" class="form-control new_comment_text" placeholder="Comment..." ng-model="comment.new_comment_text"/>
-					<input type="button" class="btn btn-default submit_comment" ng-click="add_post_comment(post.post_id,comment.new_comment_text)" value="Add"/>
+					<input type="button" class="btn btn-default submit_comment" ng-disabled="!comment.new_comment_text" ng-click="add_post_comment(post.post_id,comment.new_comment_text)" value="Add"/>
 				</div>
 			</div>
 		</div>

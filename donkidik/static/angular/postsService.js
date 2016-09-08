@@ -28,6 +28,27 @@ angular.module('DonkidikApp')
 								}).then(function(res){
 					return res.data;
 				});
+			},
+
+			remove_post: function(pid){
+				var url = '/api/post/remove/'+pid+'/';
+				return $http.post(url).then(function(res){
+					return res.data;
+				});
+			},
+
+			post_upvote: function(pid){
+				var url = '/api/post/'+pid+'/upvote/'
+				return $http.post(url).then(function(res){
+					return res.data;
+				});
+			},
+
+			post_downvote: function(pid){
+				var url = '/api/post/'+pid+'/downvote/'
+				return $http.post(url).then(function(res){
+					return res.data;
+				});
 			}
 		}; //end return
 
