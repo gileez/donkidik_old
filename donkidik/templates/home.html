@@ -5,7 +5,7 @@
 		style{display:block !important;}
 		#main input[type="text"], #main input[type="name"], #main input[type="password"]{margin:5px 0; padding: 5px;}
 
-		#main {display:block; position: absolute;width:100%;}
+		#main {display:block; position: absolute;width:100%; background: #E2E2E2;}
 		#main .add_post {padding: 20px 0; padding-bottom: 10px; height: 150px;}
 		#main .add_post .types {color: black; background:none;}
 		#main .add_post .types ul {list-style: none; padding:0; margin:0;}
@@ -26,7 +26,7 @@
 		#main .post_list .post .post_report a {color: black;}
 		#main .post_list .post .post_report a:hover {color: white; background: black; text-decoration: none;}
 		#main .post_list .post .more {cursor: pointer;}
-		.post {padding: 10px;}
+		.post {padding: 10px; background: white;}
 		.post .user {font-weight: bold;}
 		.post .post_text {padding: 10px;}
 		.post .comment_text {padding: 5px;}
@@ -130,12 +130,12 @@
 				var $select = $(".spot select").first();
 				var selectTemplate = $.templates("#select");
 				var sel_html = selectTemplate.render(res.data);
-				var empty_option = "<option disabled selected value> -- Spot -- </option>";
+				var empty_option = "<option disabled='true' selected='true' value=0> -- Spot -- </option>";
 				$select.html(empty_option + sel_html);
 			});
 			//populate knots select
 			var $knots_sel = $(".knots select");
-			$knots_sel.html("<option disabled selected value> -- Knots -- </option>");
+			$knots_sel.html("<option disabled='true' value=0 selected='true'> -- Knots -- </option>");
 			for (i=1;i<=40;i++){
 				$knots_sel.append($('<option></option>').val(i).html(i));
 			}
@@ -174,7 +174,7 @@
 						}
 				if (data.type_name == 'Report'){
 					var knots = $(".knots").find(":selected").val();
-					var spot = $(".spot").find(":selected").val();
+					var spot = $(".spot").find(":selected").html();
 					if (knots == "") errors.push("Missing wind speed!");
 					if (spot == "") errors.push("Missing spot!");
 					if (errors.length == 0){
@@ -190,6 +190,8 @@
 					if (res.status == 'OK'){
 						$("#post_text").val('');
 						$("#post_state").empty();
+						$(".knots select")[0].value=0;
+						$(".spot select")[0].value=0;
 					}
 					else{
 						//add error

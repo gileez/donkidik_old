@@ -29,7 +29,7 @@ ANGULAR
 =======================
 - should i move all functionality to angular? for example making a new post. it only appears in ui once. what is the benefit?
 - correct way to handle callbacks: then \ success \ error
-- should i avoid pulling stuff from the db? if i make a new post should it be brought back from db or just populate ui?
+- should i avoid pulling stuff from the db? if i make a new post should it be brought back from db or just populate ui with local data?
 - where do i insert the serialization code so that i don't need to copy paste it to every single html file?
 
 

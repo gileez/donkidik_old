@@ -1,8 +1,10 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class UserProfile(models.Model):
-    user = models.OneToOneField('auth.User',related_name='profile', primary_key=True)
+    user = models.OneToOneField('auth.User',related_name='profile', null=False, primary_key=True)
     follows = models.ManyToManyField('self', related_name='followed_by', symmetrical=False)
     score = models.IntegerField(default=0)
     # TODO:
@@ -28,6 +30,13 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return '<%s - UserProfile>' %self.user.first_name
+
+@receiver(post_save, sender='auth.User')
+def create_profile(sender, **kwargs):
+    # make sure its not an update
+    if kwargs.get('created', False):
+        UserProfile.objects.get_or_create(user=kwargs.get('instance'))
+    return
 
 class Post(models.Model):
     author = models.ForeignKey('auth.User', related_name='posts')
@@ -66,13 +75,11 @@ class Post(models.Model):
         return ret
 
     def upvote(self, voting_user):
-        print voting_user
         if self.upvotes.filter(pk = voting_user.pk):
             self.upvotes.remove(voting_user)
             self.score -= 1
             self.author.profile.downvote()
             return False
-        print "nope"
         if self.downvotes.filter(pk = voting_user.pk):
             self.downvotes.remove(voting_user)
             self.score+=1

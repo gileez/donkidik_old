@@ -95,6 +95,7 @@ def create_post(request):
 			ret = {'status':'OK'}
 		elif data['type_name'] == 'Report':
 			spot_name = data['spot_name']
+			print "spot name is: %s" %spot_name 
 			spot = Spot.objects.filter(name=spot_name)[0]
 			if not spot:
 				ret['error']="Spot not found"
@@ -115,7 +116,9 @@ def remove_post(request, pid):
 		ret['error'] = 'Post not found'
 		return JsonResponse(ret)
 	# TODO check for special deletion permissions
-	if p.author.id != request.user.id or not request.user.is_superuser:
+	print p.author.id
+	print request.user.id
+	if ( p.author.id != request.user.id ) and not request.user.is_superuser:
 		ret['error'] = 'Attempting to delete OPP'
 		return JsonResponse(ret)
 	if p.delete():
@@ -239,9 +242,6 @@ def post_upvote(request, pid):
 	if not p:
 		ret['error'] = 'post not found'
 		return JsonResponse(ret)
-	'''if p.votes.filter(id=request.user.pk):
-		ret['error'] = 'user already upvoted this post'
-		return JsonResponse(ret)'''
 	# upvote this post
 	ret['change_score'] = 1 if p.upvote(request.user) else -1
 	# get upvote score - how many credits do we need to add based on who is making the vote
