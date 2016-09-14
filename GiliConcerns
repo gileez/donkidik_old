@@ -1,28 +1,16 @@
-- have a bunch of Users with no user profile. what to do?
 - do not understand the next mechanism. at what point is the browser suppose to go there?
-- do i care about class based views?
-- in flask i worked with sessions. where are they here?
 - should the urls end with / or not?
 - all api's start with status = FAIL. is that really necessary if there is no handling for FAILING? (example api.get_post_types)
-
 - added some logging text to settings. need to go over it
 - figure out on_delete and set properly
-- consider adding this to ?. when creating a user automatically create a user profile:
-			from django.db.models import signals
-			from donkidik.models import UserProfile
-
-
-
-			def create_user_profile(sender, instance, created, **kwargs):
-			    if created:
-			        UserProfile.objects.create(user=instance)
-
-
-			signals.post_save.connect(create_user_profile, sender=User)
 - think about: how does a forecast work? per spot? has several spots? automatically creates a session?
 - what are the conditions to auto create a session? this is an issue for both forecasts and reports. a report of 0 wind for example should not generate a session. maybe add a "rideable" flag to the report?
 
-
+========================
+PROBLEMS
+========================
+- follows field in admin looks all wrong
+- on macbook there is no call to get_posts_from_server once post has been made. WTF?
 
 ========================
 ANGULAR

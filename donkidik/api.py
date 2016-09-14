@@ -1,13 +1,12 @@
 from models import *
 import views
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
-from django.http import JsonResponse
 from django.utils import timezone
 import json, datetime
 #TODO import db

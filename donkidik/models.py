@@ -24,6 +24,8 @@ class UserProfile(models.Model):
                         'email': self.user.email,
                         'username': self.user.username,
                         'score': self.score,
+                        'follows': [u.pk for u in self.follows.all() ],
+                        'followed_by': [u.pk for u in self.followed_by.all()]
                         # TODO : picture
                                                             }
         return userJson

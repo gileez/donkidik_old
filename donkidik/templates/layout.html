@@ -6,11 +6,16 @@
 
 
 <style type="text/css">
-		.page .top{ display:block; color: white; background: teal; padding: 5px 20px;}
+		@font-face {font-family: logo; src: url(/static/fonts/purisa.ttf);}
+		#main = {display:block; width: 100%; top:100px; background: #E2E2E2; padding: 100px 33.3%;}
+		.page {}
+		.page .top{ position: fixed; top: 0; left: 0; width: 100%; height:100px; display:block; color: white; background: teal; padding: 5px 20px; z-index:999999;}
+		.page .top #logo {font-family: logo; }
 		.page .top ul{list-style-type: none; padding: 0; margin: 0;}
 		.page .top ul li {display: inline; padding: 2px;}
 		.page .top ul li a{color: white;}
 		.page .top ul li a:hover{ color:teal; background:white;}
+		.glyphicon {top: 0;}
 
 	</style>
 {% block head %}
@@ -18,7 +23,7 @@
 <div class="container-nobootstrap">
 	<div class="page">
 		<div class="top">
-	 		<h1>DonkiDik</h1>
+	 		<h1 id="logo">donkidik</h1>
 	 			<div class="menu"><ul>
 	 		 	{% if user.is_authenticated %}
 	 				<li>Welcome {{ user.first_name }}</li>|

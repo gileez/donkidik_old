@@ -24,8 +24,8 @@ urlpatterns = [
     url(r'^$', views.home),
     url(r'^login/$', views.index), #login
     url(r'^posts/$', views.posts), #all posts
-    # TODO view user profile
-    #url(r'^user/(?P<uid>[0-9]+)/$', views.userProfile),
+    # view user profile
+    url(r'^user/(?P<uid>[0-9]+)/$', views.userProfile),
     # TODO edit user profile
     #url(r'^user/profile/$', views.userProfile),
     # TODO specific spot
