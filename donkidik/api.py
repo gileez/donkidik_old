@@ -154,9 +154,31 @@ def get_posts(request):
 		ret['data'] = []
 		posts = Post.objects.all().order_by('modified')
 		for p in reversed(posts):
-			ret['data'].append(p.jsonify())
+			post_data = p.jsonify()
+			post_data['is_owner'] = (p.author.id == request.user.id)
+			post_data['is_upvoted'] = False # TODO: giley
+			post_data['is_downvoted'] = False # TODO: giley
+			ret['data'].append(post_data)
 	return JsonResponse(ret)
 
+@csrf_exempt
+def get_post_comments(request, post_id):
+	ret = {'status': 'FAIL'}
+	if not request.user.is_authenticated():
+		ret['error'] = "User is not logged in"
+		return JsonResponse(ret)
+	else:
+
+		try:
+			post = Post.objects.get(id=post_id)
+		except:
+			ret['error'] = 'Unknown post'
+			return JsonResponse(ret)
+
+		ret['status'] = 'OK'
+		ret['comments'] = [c.jsonify() for c in post.comments.all()]
+
+	return JsonResponse(ret)	
 
 @csrf_exempt
 @login_required

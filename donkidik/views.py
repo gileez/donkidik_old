@@ -11,6 +11,11 @@ def posts(request):
 def index(request):
 	context = {}
 	return render(request, 'index.html',context)
+
+@login_required
+def home_gal(request):
+	return render(request, 'home_gal.html')
+
 @login_required
 def home(request):
 	posts = Post.objects.all()

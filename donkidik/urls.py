@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 # ===== VIEWS ======
     url(r'^$', views.home),
+    url(r'^gal/$', views.home_gal),
     url(r'^login/$', views.index), #login
     url(r'^posts/$', views.posts), #all posts
     # view user profile
@@ -43,6 +44,7 @@ urlpatterns = [
     url(r'^api/logout/$', api.logout_req),
     # add post
     url(r'api/post/add/$', api.create_post),
+    url(r'^api/post/(?P<post_id>[0-9]+)/comments/$', api.get_post_comments),
     # remove post
     url(r'api/post/remove/(?P<pid>[0-9]+)/$', api.remove_post),
     # update post
