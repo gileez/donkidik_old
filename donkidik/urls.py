@@ -56,7 +56,7 @@ urlpatterns = [
     # get post types: returns a json of post types
     url(r'api/post/types/$', api.get_post_types),
     # get spots: returns a json of all possible spots
-    url(r'api/spots/get/$', api.get_spots),
+    url(r'api/spots/all/$', api.get_spots),
     # follow
     url(r'api/user/(?P<uid>[0-9]+)/follow/$', api.follow),
     # unfollow

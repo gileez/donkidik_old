@@ -58,6 +58,14 @@
 		body{padding:0;margin:0;}
 		#main{position: relative;width:550px;margin:0 auto;padding:50px 0;}
 		#main > h1{text-align:center;}
+		#main .post_creation {}
+		#main .post_creation .post_types {}
+		#main .post_creation .post_types ul {list-style: none; padding:0;}
+		#main .post_creation .post_types ul li {display: inline;}
+		#main .post_creation .post_types ul li .selected{background: darkgray;}
+		#main .post_creation .post_inputs {}
+		#main .post_creation .post_inputs .post_text {width: 50%; min-width: 300px}
+		#main .post_creation .post_inputs .post_button_cont { margin-top: 10px; }
 		#main .posts{position: relative;}
 		#main .posts .loading{padding:150px;text-align:center;font-size:22px;}
 		#main .posts > ul, #main .posts > ul > li{list-style:none;padding:0;margin:0;}
@@ -113,6 +121,20 @@
 							}
 						});
 					},
+					get_spots: function(){
+						var url = '/api/spots/all/';
+						return $http.get(url).then(function(res){
+							if (_is_success(res)) {
+								return {
+									success: true,
+									spots: res.data.data
+								};
+							}
+							else {
+								return { success: false };
+							}
+						});
+					},
 					reload_post_comments: function(pid) {
 						var url = '/api/post/' + pid + '/comments/';
 						return $http.get(url).then(function(res){
@@ -145,6 +167,16 @@
 							};
 						});
 					},
+					create_post: function(data){
+						var url = '/api/post/add/';
+						return $http.post(url,data).then(function(res){
+							return {
+								success: _is_success(res),
+								post: res.data.post,
+								error: res.data.error
+							};
+						});
+					}
 				};
 			});
 
@@ -158,8 +190,10 @@
 			.controller('HomeController', function($scope, homeService){
 
 				$scope.posts = [];
-
-				$scope.create_post = function(post_type_id, text){};
+				$scope.spots = [];
+				$scope.post_types = [	{id:1, name: 'General'},
+										{id:2, name: 'Report'}];
+				$scope.selected_post_type = 1;
 
 				$scope.get_posts = function(){
 					$scope.posts = [];
@@ -170,6 +204,24 @@
 						}
 						else {
 							alert('Error getting posts...');
+						}
+					});
+				};
+
+
+				$scope.get_spots = function(){
+					$scope.spots = [];
+					homeService.get_spots().then(function(res){
+						if (res.success) {
+							if (res.spots){
+								$scope.spots = res.spots;
+							}
+							else{
+								alert("something went wrong");
+							}
+						}
+						else {
+							alert('Error getting spots...');
 						}
 					});
 				};
@@ -216,6 +268,39 @@
 					});
 				};
 
+				$scope.create_post = function(){
+					data = {
+								post_type: Number($scope.selected_post_type),
+								text: $scope.post_text,
+
+					};
+					if ($scope.selected_post_type != 1){
+						try{
+							data['spot_id'] = Number($scope.selected_spot.id);
+							data['knots'] = Number($scope.knots);
+						}catch(e){
+							alert(e);
+							return;
+						}
+					}
+					homeService.create_post(data).then(function(res){
+						if (res.success){
+							$scope.posts.splice(0,0,res.post);
+						}else{
+							alert(res.error);
+						}
+					}).catch(function(res){
+						//TODO: let user know post didn't go through
+						alert("fuck-a-duck");
+						return; 
+					});
+
+				};
+
+				$scope.change_selected = function(selected){
+					$scope.selected_post_type = selected;
+				};
+				$scope.get_spots();
 				$scope.get_posts();
 
 			});
@@ -228,6 +313,66 @@
 <body>
 	<div id="main" ng-controller="HomeController">
 		<h1>DonkiDik</h1>
+		<div class="post_creation">
+			<div class="post_types">
+				<ul>
+					<li ng-repeat="pt in post_types" id="[[pt.id]]" ng-click="change_selected(pt.id)">
+						<button class="ui button" ng-class="{selected: pt.id == selected_post_type}">[[pt.name]]</button>
+					</li>
+					<!--li id="1" ng-click="generalSelected()"><button class="ui button">General</button></li>
+					<li id="2" ng-click="reportSelected()"><button class="ui button">Report</button></li-->
+				</ul>
+			</div>
+			<div class="post_inputs">
+				<div class="report" ng-show="selected_post_type == 2">
+					<input type="text" class="post_text" placeholder="Write your post" ng-model="post_text">
+					<select ng-model="selected_spot" class="spots" ng-options="spot as spot.name for spot in spots track by spot.id">
+						<option value="" disabled selected style="display: none">Spot</option>
+					</select>
+					<select id="knots" ng-model="knots">
+						<option value="" disabled selected style="display: none">Knots</option>
+						<option value="5">5</option>
+						<option value="6">6</option>
+						<option value="7">7</option>
+						<option value="8">8</option>
+						<option value="9">9</option>
+						<option value="10">10</option>
+						<option value="11">11</option>
+						<option value="12">12</option>
+						<option value="13">13</option>
+						<option value="14">14</option>
+						<option value="15">15</option>
+						<option value="16">16</option>
+						<option value="17">17</option>
+						<option value="18">18</option>
+						<option value="19">19</option>
+						<option value="20">20</option>
+						<option value="21">21</option>
+						<option value="22">22</option>
+						<option value="23">23</option>
+						<option value="24">24</option>
+						<option value="25">25</option>
+						<option value="26">26</option>
+						<option value="27">27</option>
+						<option value="28">28</option>
+						<option value="29">29</option>
+						<option value="30">30</option>
+						<option value="31">31</option>
+						<option value="32">32</option>
+						<option value="33">33</option>
+						<option value="34">34</option>
+					</select>
+				</div>
+				<div class="general" ng-show="selected_post_type == 1">
+					<input type="text" class="post_text" placeholder="Write your post" ng-model="post_text">
+				</div>
+				<div class="post_button_cont">
+					<button id="create_post" class="ui mini green button" ng-click="create_post()" ng-disabled="!post_text">
+						Post
+					</button>
+				</div>
+			</div>
+		</div>
 		<div class="posts">
 			<div class="loading" ng-show="!posts_loaded">
 				Loading Posts...
@@ -243,7 +388,12 @@
 							<i class="caret down icon"></i>
 						</div>
 					</div>
-					<div class="content ui stacked segment">[[post.text]]</div>
+					<div class="content ui stacked segment">
+						<div class="spot_content" ng-show="post.knots && post.spot">
+							[[post.knots]] knots at [[post.spot]]<br>
+						</div>
+					[[post.text]]
+					</div>
 					<div class="comments ui segment">
 						<ul>
 							<li ng-repeat="comm in post.comments">

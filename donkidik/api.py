@@ -86,16 +86,15 @@ def create_post(request):
 				return JsonResponse(ret)
 		data = request.POST
 		uid = int(request.user.id)
-		print "post type is %s" %data.get('post_type')
-		post_type = int(data.get('post_type'))
+		post_type = data.get('post_type')
+		spot_id = data.get('spot_id')
+		print "post type is %s" %post_type
 		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, date=datetime.datetime.now())
 		p.save()
-		if data['type_name'] == 'General':
+		if post_type == 1:
 			ret = {'status':'OK'}
-		elif data['type_name'] == 'Report':
-			spot_name = data['spot_name']
-			print "spot name is: %s" %spot_name 
-			spot = Spot.objects.filter(name=spot_name)[0]
+		elif post_type == 2: 
+			spot = Spot.objects.filter(pk=spot_id)[0]
 			if not spot:
 				ret['error']="Spot not found"
 			else:
@@ -103,6 +102,7 @@ def create_post(request):
 				p_meta = PostMeta.objects.create(post=p,knots=knots,spot=spot)
 				#p_meta.save() 
 				ret = {'status':'OK'}
+		ret['post'] = p.jsonify()
 	return JsonResponse(ret)
 
 @csrf_exempt
@@ -195,13 +195,14 @@ def get_post_types(request):
 @csrf_exempt
 @login_required
 def get_spots(request):
-	ret = {'status':'OK', 'data':[]}
+	ret = {'status':'FAIL', 'data':[]}
 	spots = Spot.objects.all()
 	for s in spots:
 		ret['data'].append({
-								'id': s.id,
+								'id': int(s.id),
 								'name': s.name
 							})
+	ret['status'] = 'OK'
 	return JsonResponse(ret)
 
 @csrf_exempt
