@@ -3,6 +3,13 @@ from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+POST_TYPE_GENERAL = 1
+POST_TYPE_REPORT = 2
+POST_TYPES = [
+    (POST_TYPE_GENERAL, 'General'),
+    (POST_TYPE_REPORT, 'Report'),
+]
+
 class UserProfile(models.Model):
     user = models.OneToOneField('auth.User',related_name='profile', null=False, primary_key=True)
     follows = models.ManyToManyField('self', related_name='followed_by', symmetrical=False)
@@ -42,7 +49,8 @@ def create_profile(sender, **kwargs):
 
 class Post(models.Model):
     author = models.ForeignKey('auth.User', related_name='posts')
-    post_type = models.ForeignKey('PostType')
+    #post_type = models.ForeignKey('PostType')
+    post_type = models.IntegerField(choices=POST_TYPES, default=POST_TYPE_GENERAL, blank=False, null=False, db_index=True)
     text = models.TextField()
     date = models.DateTimeField(default=timezone.now)
     modified = models.DateTimeField(default=timezone.now)
@@ -51,9 +59,8 @@ class Post(models.Model):
     score = models.IntegerField(default=0)
     # TODO: add image, video
 
-    def jsonify(self):
-        ret = {     'post_type':self.post_type.name,
-                    'type_id': self.post_type.id,
+    def jsonify(self, user=None):
+        ret = {     'post_type':self.post_type,
                     'author': { 'name': self.author.first_name,
                                 'id': self.author.id
                                 },
@@ -66,6 +73,10 @@ class Post(models.Model):
                     'upvotes':[ u.pk for u in self.upvotes.all() ],
                     'downvotes':[ u.pk for u in self.downvotes.all() ]
                 }
+
+        if user and user.id == self.author.id:
+            ret['is_owner'] = True
+
         if hasattr(self,'meta'):
             # there is a meta record for this post
             ret.update({    'knots': self.meta.knots,
@@ -108,7 +119,8 @@ class Post(models.Model):
         return True
 
     def __str__(self):
-        return '<%s> %s' %(self.post_type.name, self.author.username)
+        post_type = 'General' if self.post_type == POST_TYPE_GENERAL else 'Report'
+        return '%s (%s)' % (post_type, self.author)
 
 class PostType(models.Model):
     name = models.CharField(max_length=50)

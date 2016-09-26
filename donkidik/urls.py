@@ -22,7 +22,6 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 # ===== VIEWS ======
     url(r'^$', views.home),
-    url(r'^gal/$', views.home_gal),
     url(r'^login/$', views.index), #login
     url(r'^posts/$', views.posts), #all posts
     # view user profile
@@ -54,7 +53,7 @@ urlpatterns = [
     # all posts
     url(r'api/posts/all/$', api.get_posts),
     # get post types: returns a json of post types
-    url(r'api/post/types/$', api.get_post_types),
+    #url(r'api/post/types/$', api.get_post_types),
     # get spots: returns a json of all possible spots
     url(r'api/spots/all/$', api.get_spots),
     # follow

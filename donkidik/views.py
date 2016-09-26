@@ -13,19 +13,21 @@ def index(request):
 	return render(request, 'index.html',context)
 
 @login_required
-def home_gal(request):
-	return render(request, 'home_gal.html')
-
-@login_required
 def home(request):
-	posts = Post.objects.all()
-	context={'posts':[]}
-	for p in posts:
-		context['posts'].append({	'author': p.author.username,
-									'text':p.text,
-									'post_type': p.post_type
-								})
-	return render(request, 'home.html',context)
+	return render(request, 'home.html')
+
+# @login_required
+# def home_old(request):
+# 	posts = Post.objects.all()
+# 	context={'posts':[]}
+# 	for p in posts:
+# 		context['posts'].append({	'author': p.author.username,
+# 									'text':p.text,
+# 									'post_type': p.post_type
+# 								})
+# 	return render(request, 'home.html',context)
+
+
 @login_required
 def userProfile(request,uid):
 	uid = int(uid)

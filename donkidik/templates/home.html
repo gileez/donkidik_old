@@ -1,286 +1,519 @@
-{% extends "layout.html" %}
-
-{% block head %}
-	<style type="text/css">
-		style{display:block !important;}
-		#main input[type="text"], #main input[type="name"], #main input[type="password"]{margin:5px 0; padding: 5px;}
-
-		#main {display:block; width: 100%; top:100px; background: #E2E2E2; padding: 100px 33.3%;}
-		#main .add_post {padding: 20px 0; padding-bottom: 10px; height: 150px;}
-		#main .add_post .types {color: black; background:none;}
-		#main .add_post .types ul {list-style: none; padding:0; margin:0;}
-		#main .add_post .types ul li {display:inline; padding: 5px;}
-		#main .add_post .types ul li:hover {color:white; background: grey;}
-		#main .add_post .types .selected, #main .add_post .types .selected:hover {color:white; background: black;}
-		#main .add_post #post_state {color:red; font-size: 12px}
-		
-		#main .post_list .post {border: solid 1px; font-size: 16px; margin-top:10px;padding: 10px; background: white;}
-		#main .post_list .post .user {display:inline-block;margin-left: 5px;}
-		#main .post_list .post .user a {color: white;font-weight: bold;}
-		#main .post_list .post .user a:hover {color: teal; background: white; text-decoration: none;}
-		#main .post_list .post .timestamp {display:inline-block; float:right; margin-right: 5px;}
-		#main .post_list .post .Report {background: teal; color:white;}
-		#main .post_list .post .post_text {padding: 10px;}
-		#main .post_list .post .General {background: orange; color:white;}
-		#main .post_list .post .text {display: block; margin: 5px;}
-		#main .post_list .post .post_report {display: block; margin: 5px;}
-		#main .post_list .post .post_report a {color: black;}
-		#main .post_list .post .post_report a:hover {color: white; background: black; text-decoration: none;}
-		#main .post_list .post .more {cursor: pointer;}
-		.post {}
-		.post .user {}
-		.post .post_text {}
-		.post .comment_text {padding: 5px;}
-		.post .comment .user, .post .comment .comment_text {display: inline-block;}
-		.post .actions {border-top: solid 1px; border-bottom: solid 1px; margin:0;padding:0; cursor: pointer;}
-		.comment_container { margin: 5px; background-color:#f6f7f9;  font-size: 15px}
-		.actions {}
-		.glyphicon {font-size: 15px; padding: 5px 10px;}
-		.glyphicon:hover {color:teal; background:black;}
-		.clickedred {font-size: 15px; padding: 5px 10px; color:red;}
-		.clickedgreen {font-size: 15px; padding: 5px 10px;color:green;}
-	</style>
+<!doctype html>
+<html ng-app="donkidik">
+<head>
+	<title>Yo Bitches</title>
+	<link rel="stylesheet" href="/static/semantic/dist/semantic.min.css">
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.1/angular.min.js"></script>
 	<script type="text/javascript">
-		angular.module('DonkidikApp', [], function($httpProvider){
-			// Use x-www-form-urlencoded Content-Type
-			  $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
+	angular.module('donkidik', [], function($httpProvider){
+		// Use x-www-form-urlencoded Content-Type
+		  $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
 
-			  /**
-			   * The workhorse; converts an object to x-www-form-urlencoded serialization.
-			   * @param {Object} obj
-			   * @return {String}
-			   */ 
-			  var param = function(obj) {
-			    var query = '', name, value, fullSubName, subName, subValue, innerObj, i;
+		  /**
+		   * The workhorse; converts an object to x-www-form-urlencoded serialization.
+		   * @param {Object} obj
+		   * @return {String}
+		   */ 
+		  var param = function(obj) {
+		    var query = '', name, value, fullSubName, subName, subValue, innerObj, i;
 
-			    for(name in obj) {
-			      value = obj[name];
+		    for(name in obj) {
+		      value = obj[name];
 
-			      if(value instanceof Array) {
-			        for(i=0; i<value.length; ++i) {
-			          subValue = value[i];
-			          fullSubName = name + '[' + i + ']';
-			          innerObj = {};
-			          innerObj[fullSubName] = subValue;
-			          query += param(innerObj) + '&';
-			        }
-			      }
-			      else if(value instanceof Object) {
-			        for(subName in value) {
-			          subValue = value[subName];
-			          fullSubName = name + '[' + subName + ']';
-			          innerObj = {};
-			          innerObj[fullSubName] = subValue;
-			          query += param(innerObj) + '&';
-			        }
-			      }
-			      else if(value !== undefined && value !== null)
-			        query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
-			    }
+		      if(value instanceof Array) {
+		        for(i=0; i<value.length; ++i) {
+		          subValue = value[i];
+		          fullSubName = name + '[' + i + ']';
+		          innerObj = {};
+		          innerObj[fullSubName] = subValue;
+		          query += param(innerObj) + '&';
+		        }
+		      }
+		      else if(value instanceof Object) {
+		        for(subName in value) {
+		          subValue = value[subName];
+		          fullSubName = name + '[' + subName + ']';
+		          innerObj = {};
+		          innerObj[fullSubName] = subValue;
+		          query += param(innerObj) + '&';
+		        }
+		      }
+		      else if(value !== undefined && value !== null)
+		        query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
+		    }
 
-			    return query.length ? query.substr(0, query.length - 1) : query;
-			  };
+		    return query.length ? query.substr(0, query.length - 1) : query;
+		  };
 
-			  // Override $http service's default transformRequest
-			  $httpProvider.defaults.transformRequest = [function(data) {
-			    return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
-			  }];
-			}).config(function($interpolateProvider){
-				$interpolateProvider.startSymbol('[[');
-				$interpolateProvider.endSymbol(']]');
-			});
+		  // Override $http service's default transformRequest
+		  $httpProvider.defaults.transformRequest = [function(data) {
+		    return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
+		  }];
+		}).config(function($interpolateProvider){
+			$interpolateProvider.startSymbol('[[');
+			$interpolateProvider.endSymbol(']]');
+		}).filter('html', ['$sce', function ($sce) { 
+		    return function (text) {
+		        return $sce.trustAsHtml(text);
+		    };    
+		}])
 	</script>
-	<script type="text/javascript" src="../static/angular/PostsPageController.js"></script>
-	<script type="text/javascript" src="../static/angular/postsService.js"></script>
-	<script id="select" type="text/x-jsrender">
-		<option value="{[:id]}">{[:name]}</option>
+	<style type="text/css">
+		*{outline:none !important;}
+		body{padding:0;margin:0;}
+		#main{position: relative;width:550px;margin:0 auto;padding:50px 0;}
+		#main > h1{text-align:center;}
+
+		#main .post_creation {}
+		#main .post_creation .post_types {}
+		#main .post_creation .post_types ul {list-style: none; padding:0;}
+		#main .post_creation .post_types ul li {display: inline;}
+		#main .post_creation .post_types ul li .selected{background: darkgray;}
+		#main .post_creation .post_inputs {}
+		#main .post_creation .post_inputs .post_text {width: 50%; min-width: 300px}
+		#main .post_creation .post_inputs .post_button_cont { margin-top: 10px; }
+
+
+		#main #new_post_cont{position: relative;}
+		#main #new_post_cont textarea{height:50px;min-height:0;line-height:auto;}
+		#main #new_post_cont .sbmt{position: absolute;right:0;}
+		#main #new_post_cont select{margin:5px 0;}
+		#main .posts{position: relative;}
+		#main .posts .loading{padding:150px;text-align:center;font-size:22px;}
+		#main .posts > ul, #main .posts > ul > li{list-style:none;padding:0;margin:0;}
+		#main .posts > ul > li{margin:25px 0;position: relative;padding:35px 25px;}
+		#main .posts > ul > li.general{}
+		#main .posts > ul > li.report{}
+		#main .posts > ul > li .hdr{position: relative;}
+		#main .posts > ul > li .hdr .hdricon{font-size:23px;}
+		#main .posts > ul > li .hdr .by{position: relative;top:-4px;left:-5px;}
+		#main .posts > ul > li .hdr .rank{position: absolute;top:15px;right:10px;width:50px;text-align:center;}
+		#main .posts > ul > li .hdr .rank span{font-weight:bold;font-size:14px;}
+		#main .posts > ul > li .hdr .rank i{position: absolute;left:50%;transform:translateX(-50%);-webkit-transform:translateX(-50%);-moz-transform:translateX(-50%);cursor:pointer;}
+		#main .posts > ul > li .hdr .rank i.up{top:-11px;}
+		#main .posts > ul > li .hdr .rank i.down{bottom:-9px;}
+		#main .posts > ul > li .hdr .rank i.selected{color:#000;}
+		#main .posts > ul > li .content{}
+		#main .posts > ul > li .comments{padding-top:10px;}
+		#main .posts > ul > li .comments ul{list-style:none;padding:0;margin:0;}
+		#main .posts > ul > li .comments ul li{list-style:none;margin:0;border-bottom:solid 1px #f1f1f1;padding:15px 0;}
+		#main .posts > ul > li .comments ul li:last-of-type{border-bottom:none;}
+		#main .posts > ul > li .comments ul li .label{}
+		#main .posts > ul > li .comments ul li .comm_text{}
+		#main .posts > ul > li .comments .add{}
+		#main .posts > ul > li .comments .add .action.input{width:100%;}
+		#main .posts > ul > li .comments .add .action.input input{width:100%;}
+		#main .posts > ul > li .owner_actions{}
+		#main .posts > ul > li .owner_actions button{float:right;}
+	</style> 
+
+	<script>
+
+	// service
+	(function(){
+
+		var _is_success = function(response){
+			return (response.data.status && response.data.status == 'OK');
+		};
+
+		angular.module('donkidik')
+			.factory('homeService', function($http){
+				return {
+					get_posts: function(){
+						var url = '/api/posts/all/';
+						return $http.get(url).then(function(res){
+							if (_is_success(res)) {
+								return {
+									success: true,
+									posts: res.data.data
+								};
+							}
+							else {
+								return { success: false };
+							}
+						});
+					},
+					get_spots: function(){
+						var url = '/api/spots/all/';
+						return $http.get(url).then(function(res){
+							if (_is_success(res)) {
+								return {
+									success: true,
+									spots: res.data.data
+								};
+							}
+							else {
+								return { success: false };
+							}
+						});
+					},
+					reload_post_comments: function(pid) {
+						var url = '/api/post/' + pid + '/comments/';
+						return $http.get(url).then(function(res){
+							if (_is_success(res)) {
+								return {
+									success:true,
+									comments: res.data.comments 
+								};
+							}
+							else {
+								return { success: false };
+							}
+						});
+					},
+					post_comment: function(pid, text){
+						var url = '/api/post/' + pid +'/add_comment/',
+							params = { text: text };
+
+						return $http.post(url, params).then(function(res){
+							return {
+								success: _is_success(res)
+							};
+						});
+					},
+					delete_post: function(pid){
+						var url = '/api/post/remove/' + pid + '/';
+						return $http.post(url).then(function(res){
+							return {
+								success: _is_success(res)
+							};
+						});
+					},
+					create_post: function(data){
+						var url = '/api/post/add/';
+						return $http.post(url, data).then(function(res){
+							return {
+								success: _is_success(res),
+								post: res.data.post,
+								error: res.data.error
+							};
+						});
+					}
+				};
+			});
+
+	})();
+
+	
+	// controller
+	(function(){
+
+		angular.module('donkidik')
+			.controller('HomeController', function($scope, homeService){
+
+				$scope.posts = [];
+				$scope.spots = [];
+				$scope.create_post_type = ''
+				$scope.selected_post_type = 'general';
+				$scope.new_post_error = '';
+
+				$scope.get_range = function(min, max){
+					var ret = [];
+					for (var i=min; i<=max; i++)
+						ret.push(i);
+					return ret;
+				};
+
+				$scope.get_posts = function(){
+					$scope.posts = [];
+					homeService.get_posts().then(function(res){
+						if (res.success) {
+							$scope.posts = res.posts;
+							$scope.posts_loaded = true;
+						}
+						else {
+							alert('Error getting posts...');
+						}
+					});
+				};
+
+
+				$scope.get_spots = function(){
+					$scope.spots = [];
+					homeService.get_spots().then(function(res){
+						if (res.success) {
+							if (res.spots){
+								$scope.spots = res.spots;
+							}
+							else{
+								alert("something went wrong");
+							}
+						}
+						else {
+							alert('Error getting spots...');
+						}
+					});
+				};
+
+				$scope.reload_post_comments = function(post) {
+					homeService.reload_post_comments(post.post_id).then(function(res){
+						if (res.success) {
+							post.comments = res.comments;
+						}
+						else {
+							alert('Error reloading post comments');
+						}
+					});
+				};
+
+				$scope.post_comment = function(post){
+					if (!post.comm_text)
+						return;
+
+					var txt = post.comm_text;
+					post.comm_text = '';
+					homeService.post_comment(post.post_id, txt).then(function(){
+						$scope.reload_post_comments(post);
+					});
+				};
+
+				$scope.delete_post = function(post){
+					
+					if (!confirm('Sure?'))
+						return;
+
+					homeService.delete_post(post.post_id).then(function(res){
+						if (res.success) {
+							for (var i=0; i<$scope.posts.length; i++) {
+								if ($scope.posts[i].post_id == post.post_id) {
+									$scope.posts.splice(i, 1);
+									break;
+								}
+							}
+						}
+						else {
+							alert('Error deleting post');
+						}
+					});
+				};
+
+				// NEW
+ 				$scope.submit_new_post = function(){
+
+ 					$scope.new_post_error = '';
+ 					var post_type = $scope.selected_post_type,
+ 						text = $scope.new_post_text;
+
+ 					if (!text) {
+ 						$scope.new_post_error = 'Please enter your message';
+ 						return;
+ 					}
+
+					var data = {
+						post_type: (post_type == 'general' ? 1 : 2),
+						text: text
+					};
+
+					if ($scope.selected_post_type == 'report') {
+						var spot_id = ($scope.new_post_spot ? $scope.new_post_spot.id : false),
+							knots = $scope.new_post_knots;
+						if (!spot_id) {
+							$scope.new_post_error = '<p>Please choose a Spot</p>';
+						}
+						if (!knots) {
+							$scope.new_post_error += '<p>Please choose knots</p>';
+						}
+						if ($scope.new_post_error)
+							return;
+						
+						data.spot_id = spot_id;
+						data.knots = knots;
+					}
+
+					homeService.create_post(data).then(function(res){
+						if (res.success) {
+							$scope.new_post_text = '';
+							$scope.new_post_error = '';
+							$scope.new_post_knots = '';
+							$scope.new_post_spot = '';
+							$scope.posts.unshift(res.post);
+						}
+						else {
+							$scope.new_post_error = 'Error saving post: ' + res.error || 'Internal error';
+						}
+					});
+
+				};
+
+				// OLD
+				$scope.create_post = function(){
+					data = {
+								post_type: Number($scope.selected_post_type),
+								text: $scope.post_text,
+
+					};
+					if ($scope.selected_post_type != 1){
+						try{
+							data['spot_id'] = Number($scope.selected_spot.id);
+							data['knots'] = Number($scope.knots);
+						}catch(e){
+							alert(e);
+							return;
+						}
+					}
+					homeService.create_post(data).then(function(res){
+						if (res.success){
+							$scope.posts.splice(0,0,res.post);
+						}else{
+							alert(res.error);
+						}
+					}).catch(function(res){
+						//TODO: let user know post didn't go through
+						alert("fuck-a-duck");
+						return; 
+					});
+
+				};
+
+				$scope.change_selected = function(selected){
+					$scope.selected_post_type = selected;
+				};
+				$scope.get_spots();
+				$scope.get_posts();
+
+			});
+
+	})();
+
 	</script>
 
-	<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsrender/0.9.78/jsrender.min.js"></script>
-	<script type="text/javascript">
-		$(document).ready(function(){
-			$.views.settings.delimiters("{[","]}");
-			//get all posts
-			var selected_id = 1;
-			function refresh_posts(){
-				$.post("api/posts/all/", function(res){
-					var postTemplate = $.templates("#post");
-					var $post_list = $(".post_list");
-					var pl_html = postTemplate.render(res.data);
-					// for (var i=res.data.length-1; i>-1; i--){
-					// 	pl_html+="<div class=\"post\"><div class=\"" + res.data[i].post_type + "\">" + res.data[i].post_type +" by <a href=\"api/posts/" + res.data[i].id + "/\">"+ res.data[i].author.name + "</a></div><div class=\"text\">" + res.data[i].text + "</div></div>"
-					// }
-					$post_list.html(pl_html);
-				});//end $.post
-			}
-			//get all post types
-			$.post("api/post/types/",function(res){
-				var $post_types = $(".types ul").first(),
-					ptypes = '';
-				for (var i=0; i<res.data.length ; i++){
-					ptypes+="<li id=\""+ res.data[i].id + "\">"+ res.data[i].name + "</li>";
-				}
-				$post_types.html(ptypes);
-				$(".types ul li").removeClass("selected"); 
-				$(".types ul li").first().addClass("selected");
-
-			});//end $.post
-			//get all spots
-			$.post("api/spots/get/",function(res){
-				var $select = $(".spot select").first();
-				var selectTemplate = $.templates("#select");
-				var sel_html = selectTemplate.render(res.data);
-				var empty_option = "<option disabled='true' selected='true' value=0> -- Spot -- </option>";
-				$select.html(empty_option + sel_html);
-			});
-			//populate knots select
-			var $knots_sel = $(".knots select");
-			$knots_sel.html("<option disabled='true' value=0 selected='true'> -- Knots -- </option>");
-			for (i=1;i<=40;i++){
-				$knots_sel.append($('<option></option>').val(i).html(i));
-			}
-			//listen to changes on selected post type
-			$(document).on('click','.types ul li',function(){
-				$(".types ul li").removeClass("selected");
-				$(this).addClass("selected");
-				selected_id = $(this)[0].id;
-				var selected_name = $(this).html();
-				if (selected_name == 'General'){
-					$('#post_text').show();
-					$('.knots').hide();
-					$('.spot').hide();
-				}
-				else if (selected_name == 'Report'){
-					$('#post_text').show();
-					$('.knots').show();
-					$('.spot').show();
-				}
-				else {
-					$('#post_text').hide();
-					$('.knots').hide();
-					$('.spot').hide();
-				}
-			});
-			// post button is disabled without text
-			$("#post_text").keyup(function(){
-				$("#submit_post")[0].disabled = (this.value == "");
-			});
-
-			$("#submit_post").click(function(){
-				var errors=[]
-				var data={	'text': $("#post_text").val(),
-						'post_type':selected_id,
-						'type_name': $(".types .selected").html(),
-						}
-				if (data.type_name == 'Report'){
-					var knots = $(".knots").find(":selected").val();
-					var spot = $(".spot").find(":selected").html();
-					if (knots == "") errors.push("Missing wind speed!");
-					if (spot == "") errors.push("Missing spot!");
-					if (errors.length == 0){
-						data.knots = Number(knots);
-						data.spot_name = spot;
-					}
-				}
-				if (errors.length > 0){
-					$('#post_state').html(errors.join("</br>"));
-					return
-				}
-				$.post("api/post/add/", data, function(res){
-					if (res.status == 'OK'){
-						$("#post_text").val('');
-						$("#post_state").empty();
-						$(".knots select")[0].value=0;
-						$(".spot select")[0].value=0;
-					}
-					else{
-						//add error
-						if (res.error){
-							$("#post_state").html(res.error);
-						}
-						else{
-							$("#post_state").html("unknown error when attempting to post");
-						}
-					}
-				});//end $.post
-				// TODO: get rid of this bullshit
-				angular.element(document.getElementById('main')).scope().get_posts_from_server();
-				angular.element(document.getElementById('main')).scope().$apply();
-			});// end submit_post click
-
-		});//end documentready
-	</script>
-{% endblock %}
-{% block body %}
-	<div id="angularApp" ng-app="DonkidikApp">
-	<div id="main" ng-controller="PostsPageController" ng-cloak>
-		<div class="add_post">
-			<div class="types">
-				<ul></ul>
+</head>
+<body>
+	<div id="main" ng-controller="HomeController">
+		<h1>DonkiDik</h1>
+		<div class="post_creation" style="display:none !important;">
+			<div class="post_types">
+				<ul>
+					<!-- <li ng-repeat="pt in post_types" id="[[pt.id]]" ng-click="change_selected(pt.id)">
+						<button class="ui button" ng-class="{selected: pt.id == selected_post_type}">[[pt.name]]</button>
+					</li> -->
+					<li id="1" ng-click="selected_post_type='general'"><button class="ui button">General</button></li>
+					<li id="2" ng-click="selected_post_type='report'"><button class="ui button">Report</button></li>
+				</ul>
 			</div>
-			<div class="post_content">
-				<input type="text" id="post_text" placeholder="let us know!"/>
-				<input type="button" class="btn btn-default" id="submit_post" value="post" disabled="true"/>
-				<div class="spot">
-					<select>
+			<div class="post_inputs">
+				<div class="report" ng-show="selected_post_type == 'report'">
+					<input type="text" class="post_text" placeholder="Write your post" ng-model="post_text">
+					<select ng-model="selected_spot" class="spots" ng-options="spot as spot.name for spot in spots track by spot.id">
+						<option value="" disabled selected style="display: none">Spot</option>
+					</select>
+					<select id="knots" ng-model="knots">
+						<option value="" disabled selected style="display: none">Knots</option>
+						<option value="5">5</option>
+						<option value="6">6</option>
+						<option value="7">7</option>
+						<option value="8">8</option>
+						<option value="9">9</option>
+						<option value="10">10</option>
+						<option value="11">11</option>
+						<option value="12">12</option>
+						<option value="13">13</option>
+						<option value="14">14</option>
+						<option value="15">15</option>
+						<option value="16">16</option>
+						<option value="17">17</option>
+						<option value="18">18</option>
+						<option value="19">19</option>
+						<option value="20">20</option>
+						<option value="21">21</option>
+						<option value="22">22</option>
+						<option value="23">23</option>
+						<option value="24">24</option>
+						<option value="25">25</option>
+						<option value="26">26</option>
+						<option value="27">27</option>
+						<option value="28">28</option>
+						<option value="29">29</option>
+						<option value="30">30</option>
+						<option value="31">31</option>
+						<option value="32">32</option>
+						<option value="33">33</option>
+						<option value="34">34</option>
 					</select>
 				</div>
-				<div class="knots">
-					<select>
-					</select>
+				<div class="general" ng-show="active_tab == 'general'">
+					<input type="text" class="post_text" placeholder="Write your post" ng-model="post_text">
 				</div>
-				<div id="post_state"></div>
+				<div class="post_button_cont">
+					<button id="create_post" class="ui mini green button" ng-click="create_post()" ng-disabled="!post_text">
+						Post
+					</button>
+				</div>
 			</div>
 		</div>
-		<div class="post_list" ng-repeat='post in posts'>
-			<div class="post" id="[[post.post_id]]">
-				<div class="[[post.post_type]]">
-					<div class="user">
-						[[post.post_type]] by <a href="user/[[post.author.id]]/">[[post.author.name]]</a>
-					</div>
-					<div class="timestamp">
-						[[post.date[0] ]]/[[post.date[1] ]]/[[post.date[2] ]]
-					</div>
-				</div>
-				<div class="post_report" ng-show="post.knots">
-					[[post.knots]] knots at <a href="/spots/[[post.spot_id]]/">[[post.spot]]</a>
-				</div>
-				<div class="post_text" ng-show="post.text">[[post.text]]</div>
-				<div class="actions">
-				Rank: [[post.score]]
-	  				<span class="glyphicon glyphicon-chevron-up" aria-hidden="true" ng-click="post_upvote(post,{{user.pk}})" ng-class="{clickedgreen: post.upvotes.indexOf({{user.pk}})!=-1 }"></span>
-	  				<span class="glyphicon glyphicon-chevron-down" aria-hidden="true" ng-click=post_downvote(post,{{user.pk}}) ng-class="{clickedred: post.downvotes.indexOf({{user.pk}})!=-1 }"></span>
-	  				<span class="glyphicon glyphicon-remove" ng-click="remove_post(post.post_id)"></span>
-				</div>
-					<div class="comment_container" ng-show="post.comments.length && post.more" ng-repeat='comment in post.comments'>
-						<div class="comment">
-							<div class="user" id="[[comment.user_id]]">
-								[[comment.user]]
-							</div>
-							<div class="comment_text">
-								[[comment.text]]
-							</div>
-						</div>
-					</div>
-					<div class="comment_container" ng-show="post.comments.length && !post.more" ng-repeat='comment in post.comments.slice(-3)'>
-						<div class="comment">
-							<div class="user" id="[[comment.user_id]]">
-								[[comment.user]]
-							</div>
-							<div class="comment_text">
-								[[comment.text]]
-							</div>
-						</div>
-					</div>
-					<div class="more" ng-if="post.comments.length > 3 && !post.more" ng-click="change_more(post)" cursor="pointer">[[post.comments.length-3]] more comments...</div>
-					<div class="more" ng-if="post.comments.length > 3 && post.more" ng-click="change_more(post)" cursor="pointer">Less...</div>
-					<div class="new_comment">
-					<input type="text" class="form-control new_comment_text" placeholder="Comment..." ng-model="comment.new_comment_text"/>
-					<input type="button" class="btn btn-default submit_comment" ng-disabled="!comment.new_comment_text" ng-click="add_post_comment(post.post_id,comment.new_comment_text)" value="Add"/>
-				</div>
+		<div class="ui raised segment" id="new_post_cont">
+			<h4>Write a Post</h4>
+			<div class="ui form">
+				<div class="field">
+			  		<textarea placeholder="Type a message..." ng-model="new_post_text"></textarea>
+			  	</div>
+			  	<div class="field" ng-show="selected_post_type == 'report'">
+					<select ng-model="new_post_spot" class="spots" ng-options="spot as spot.name for spot in spots track by spot.id">
+						<option value="" disabled selected style="display: none">Spot</option>
+					</select>
+					<select id="knots" ng-model="new_post_knots">
+						<option value="" disabled selected style="display: none">Knots</option>
+						<option ng-repeat="i in get_range(5, 34)" value="[[i]]">[[i]]</option>
+					</select>					
+			  	</div>
+			  	<div class="field post_type">
+					<div class="ui tiny buttons">
+						<button class="ui button" ng-click="selected_post_type = 'general'" ng-class="{blue: selected_post_type == 'general'}">General Post</button>
+						<button class="ui button" ng-click="selected_post_type = 'report'" ng-class="{blue: selected_post_type == 'report'}">Wind Report</button>
+					</div>			  		
+					<button class="ui tiny green button sbmt" ng-click="submit_new_post()">POST</button>
+					<div class="ui message red" ng-show="new_post_error" ng-bind-html="new_post_error | html"></div>
+			  	</div>
+			</div>			
+		</div>
+		<div class="posts">
+			<div class="loading" ng-show="!posts_loaded">
+				Loading Posts...
 			</div>
+			<ul ng-show="posts_loaded">
+				<li class="ui raised segment" ng-repeat="post in posts">
+					<div class="hdr ui message" ng-class="{'blue': post.post_type == 1, 'orange': post.post_type == 2}">
+						<i class="ui hdricon icon" ng-class="{'info circle': post.post_type == 1, 'announcement': post.post_type == 2}"></i>
+						<span class="by">by <b>[[post.author.name]]</b> on [[post.date[0] ]]/[[post.date[1] ]]/[[post.date[2] ]]</span>
+						<div class="rank">
+							<span>[[post.score]]</span>
+							<i class="caret up icon"></i>
+							<i class="caret down icon"></i>
+						</div>
+					</div>
+					<div class="content ui stacked segment">
+						<div class="spot_content" ng-show="post.knots && post.spot">
+							[[post.knots]] knots at [[post.spot]]<br>
+						</div>
+					[[post.text]]
+					</div>
+					<div class="comments ui segment">
+						<ul>
+							<li ng-repeat="comm in post.comments">
+								<span class="ui grey label">[[comm.user]]</span>
+								<span class="comm_text">[[comm.text]]</span>
+							</li>
+						</ul>
+						<div class="add">
+							<div class="ui action input">
+							  <input type="text" placeholder="Type your comment..." ng-model="post.comm_text" ng-focus="post.show_comm_btn=1" ng-blur="post.show_comm_btn=0;">
+							  <button class="ui green icon button" ng-click="post_comment(post)" ng-disabled="!post.show_comm_btn && !post.comm_text">
+							    <i class="send icon"></i>
+							  </button>
+							</div>
+						</div>
+					</div>
+					<div class="owner_actions" ng-if="post.is_owner" ng-click="delete_post(post)">
+						<button class="ui mini red button">Delete Post</button>
+					</div>
+				</li>
+			</ul>
 		</div>
 	</div>
-	</div> 
-{% endblock %}
+</body>
+</html>
+
+
+
+
+

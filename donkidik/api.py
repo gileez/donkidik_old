@@ -88,21 +88,24 @@ def create_post(request):
 		uid = int(request.user.id)
 		post_type = data.get('post_type')
 		spot_id = data.get('spot_id')
-		print "post type is %s" %post_type
-		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type_id=post_type, date=datetime.datetime.now())
+		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type=post_type, date=datetime.datetime.now())
 		p.save()
-		if post_type == 1:
-			ret = {'status':'OK'}
-		elif post_type == 2: 
-			spot = Spot.objects.filter(pk=spot_id)[0]
-			if not spot:
-				ret['error']="Spot not found"
-			else:
-				knots = data['knots']
-				p_meta = PostMeta.objects.create(post=p,knots=knots,spot=spot)
-				#p_meta.save() 
-				ret = {'status':'OK'}
-		ret['post'] = p.jsonify()
+
+		post_type = int(post_type)
+
+		if post_type == POST_TYPE_GENERAL:
+			ret['status'] = 'OK'
+		elif post_type == POST_TYPE_REPORT: 
+			try:
+				spot = Spot.objects.get(id=spot_id)
+			except:
+				ret['error'] = 'invalid spot'
+
+			knots = data['knots']
+			p_meta = PostMeta.objects.create(post=p, knots=knots, spot=spot)
+			ret['status'] = 'OK'
+
+		ret['post'] = p.jsonify(user=request.user)
 	return JsonResponse(ret)
 
 @csrf_exempt
@@ -154,8 +157,7 @@ def get_posts(request):
 		ret['data'] = []
 		posts = Post.objects.all().order_by('modified')
 		for p in reversed(posts):
-			post_data = p.jsonify()
-			post_data['is_owner'] = (p.author.id == request.user.id)
+			post_data = p.jsonify(user=request.user)
 			post_data['is_upvoted'] = False # TODO: giley
 			post_data['is_downvoted'] = False # TODO: giley
 			ret['data'].append(post_data)
@@ -180,17 +182,17 @@ def get_post_comments(request, post_id):
 
 	return JsonResponse(ret)	
 
-@csrf_exempt
-@login_required
-def get_post_types(request):
-	ret = {'status':'OK', 'data':[]}
-	types = PostType.objects.all()
-	for t in types:
-		ret['data'].append({
-								'id': t.id,
-								'name': t.name
-							})
-	return JsonResponse(ret)
+# @csrf_exempt
+# @login_required
+# def get_post_types(request):
+# 	ret = {'status':'OK', 'data':[]}
+# 	types = PostType.objects.all()
+# 	for t in types:
+# 		ret['data'].append({
+# 								'id': t.id,
+# 								'name': t.name
+# 							})
+# 	return JsonResponse(ret)
 
 @csrf_exempt
 @login_required
