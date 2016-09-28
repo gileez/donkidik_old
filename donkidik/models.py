@@ -19,11 +19,15 @@ class UserProfile(models.Model):
     # image, current equipment, following spots, total votes, badges, instructor
 
     def upvote(self):
+        print "got an upvote request, score is %s" %self.score
         self.score += 1
+        self.save()
+        print "now its %s" %self.score
         return
 
     def downvote(self):
         self.score = max(self.score - 1, 0)
+        self.save()
         return
 
     def jsonify(self):
@@ -63,7 +67,8 @@ class Post(models.Model):
     def jsonify(self, user=None):
         ret = {     'post_type':self.post_type,
                     'author': { 'name': self.author.first_name,
-                                'id': self.author.id
+                                'id': self.author.id,
+                                'score': self.author.profile.score
                                 },
                     'text': self.text,
                     'date': [ self.date.day,self.date.month,self.date.year],

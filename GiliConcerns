@@ -20,16 +20,8 @@ ANGULAR
 - should i avoid pulling stuff from the db? if i make a new post should it be brought back from db or just populate ui with local data?
 - where do i insert the serialization code so that i don't need to copy paste it to every single html file?
 - difference between ng-show and ng-if
-
+- ng-disabled not working on comment text
 
 for production:
 - login_required does not check user is_active
 - csrf fucking tokens. take them off globally!
-
-
-TAKS:
-- create a directive: name <time-ago> --> timeAgo (this is an angular convetion)
-api should return time in seconds passed
-type is element not attribute
-should accept one attribute which is named seconds so the element should look like
-<time-ago seconds="25"></time-ago>

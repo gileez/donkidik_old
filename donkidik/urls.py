@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^api/logout/$', api.logout_req),
     # add post
     url(r'api/post/add/$', api.create_post),
+    # GAL what is this for?
     url(r'^api/post/(?P<post_id>[0-9]+)/comments/$', api.get_post_comments),
     # remove post
     url(r'api/post/remove/(?P<pid>[0-9]+)/$', api.remove_post),
@@ -52,6 +53,8 @@ urlpatterns = [
     url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
     # all posts
     url(r'api/posts/all/$', api.get_posts),
+    # specific user posts
+    url(r'api/posts/(?P<uid>[0-9]+)/$', api.get_user_posts),
     # get post types: returns a json of post types
     #url(r'api/post/types/$', api.get_post_types),
     # get spots: returns a json of all possible spots

@@ -87,6 +87,7 @@
 		#main .posts > ul > li .hdr{position: relative; padding-bottom: 5px;}
 		#main .posts > ul > li .hdr .hdricon{font-size:23px;display: inline-block; position:relative; top:-8px; }
 		#main .posts > ul > li .hdr .by{display: inline-block; position: relative;top:-4px;left:-5px;}
+		#main .posts > ul > li .hdr .by .user_score{font-size: 10px; position:relative; top:-10px;padding:3px;}
 		#main .posts > ul > li .hdr .by .time {font-size:10px;}
 		#main .posts > ul > li .hdr .rank{position: absolute;top:15px;right:10px;width:50px;text-align:center;}
 		#main .posts > ul > li .hdr .rank span{font-weight:bold;font-size:14px;}
@@ -96,6 +97,7 @@
 		#main .posts > ul > li .hdr .rank i.down{bottom:-9px;}
 		#main .posts > ul > li .hdr .rank i.downvoted {color:red;}
 		#main .posts > ul > li .hdr .rank i.selected{color:#000;}
+		#main .posts > ul > li .hdr .rank i.disabled{color:gray;}
 		#main .posts > ul > li .content{}
 		#main .posts > ul > li .comments{padding-top:10px;}
 		#main .posts > ul > li .comments ul{list-style:none;padding:0;margin:0;}
@@ -209,48 +211,7 @@
 			});
 
 	})();
-	//time-ago directive
-	(function(){
-		angular.module('donkidik')
-			.directive('timeAgo', function() {
-				return {
-			    	restrict: 'AE',
-			    	scope: true,
-			    	replace: 'true',
-			     	template: '<div class="time">[[time_msg]]</div>',
-			    	link: function(scope, elem, attrs){
-			    		scope.time_msg = 'not set';
-				      	var 	month_time = 30*24*60*60,
-				      			day_time = 24*60*60,
-				      			hour_time = 3600,
-				      			post_date = ("0" + attrs.date[0]).substr(-2,2) + '/' + ("0" + attrs.date[1]).substr(-2,2) + '/' + attrs.date[2].substr(-2,2),
-				      			post_time = ("0" + attrs.time[0]).substr(-2,2) + ':' + ("0" + attrs.time[1]).substr(-2,2);
-
-				      	if ( attrs.seconds > month_time ) scope.time_msg = post_date + " at " + post_time; //more than a month
-				      	else if ( attrs.seconds > day_time ){ // more than a day
-				      		var days = Math.floor( attrs.seconds / day_time);
-				      		if (days == 1) scope.time_msg = "yesterday at" + post_time;
-				      		if (6 <= days <=8 ) scope.time_msg = "about a week ago";
-				      		else scope.time_msg = days + " days ago at " + post_time;
-				      	}
-				      	else if ( attrs.seconds > hour_time){
-				      		var hours = Math.floor(attrs.seconds / hour_time);
-				      		if (hours == 1) scope.time_msg = "about an hour ago";
-				      		else scope.time_msg = "about " + hours + " hours ago";
-				      	}
-				      	else if ( attrs.seconds > 60){
-				      		var minutes = Math.floor(attrs.seconds / 60);
-				      		if (minutes == 1) scope.time_msg = "about a minute ago";
-				      		else scope.time_msg = "about " + minutes + " minutes ago";
-				      	}
-				      	else{
-				      		if (attrs.seconds == 1) scope.time_msg = "about a second ago";
-				      		else scope.time_msg = "about " + attrs.seconds + " seconds ago";
-				      	}
-				    }
-				  };
-});
-	})();
+	
 	// controller
 	(function(){
 
@@ -401,6 +362,7 @@
 					homeService.post_upvote(post.post_id).then(function(res){
 						if (res.status=='OK'){
 							post.score += res.change_score;
+							post.author.score = Math.max(post.author.score+res.change_score,0)
 							if (res.change_score == -1){ // was previously upvoted. cancel the upvote
 								post.is_upvoted = false;
 								var i = post.upvotes.indexOf(res.uid);
@@ -434,6 +396,7 @@
 					homeService.post_downvote(post.post_id).then(function(res){
 						if (res.status=='OK'){
 							post.score += res.change_score;
+							post.author.score = Math.max(post.author.score+res.change_score,0)
 							if (res.change_score == 1){ // was previously downvoted. cancel the downvote
 								post.is_downvoted = false;
 								var i = post.downvotes.indexOf(res.uid);
@@ -470,6 +433,7 @@
 	})();
 
 	</script>
+	<script type="text/javascript" src="static/angular/generalDirectives.js"></script>
 
 </head>
 <body>
@@ -501,50 +465,13 @@
 			  	</div>
 			</div>			
 		</div>
+
 		<div class="posts">
 			<div class="loading" ng-show="!posts_loaded">
 				Loading Posts...
 			</div>
 			<ul ng-show="posts_loaded">
-				<li class="ui raised segment" ng-repeat="post in posts">
-					<div class="hdr ui message" ng-class="{'blue': post.post_type == 1, 'orange': post.post_type == 2}">
-						<i class="ui hdricon icon" ng-class="{'info circle': post.post_type == 1, 'announcement': post.post_type == 2}"></i>
-						<div class="by">
-							<span><b>[[post.author.name]]</b></span>
-							<time-ago seconds="[[post.seconds_passed]]" date="[[post.date]]" time="[[post.time]]"></time-ago>
-						</div>
-						<div class="rank">
-							<span>[[post.score]]</span>
-							<i class="caret up icon" ng-class="{upvoted: post.is_upvoted}" ng-click="isDisabled || post_upvote(post)" ng-disabled="post.is_owner"></i>
-							<i class="caret down icon" ng-class="{downvoted: post.is_downvoted}" ng-click="isDisabled || post_downvote(post)" ng-disabled="post.is_owner"></i>
-						</div>
-					</div>
-					<div class="content ui stacked segment">
-						<div class="spot_content" ng-show="post.knots && post.spot">
-							[[post.knots]] knots at [[post.spot]]<br>
-						</div>
-					[[post.text]]
-					</div>
-					<div class="comments ui segment">
-						<ul>
-							<li ng-repeat="comm in post.comments">
-								<span class="ui grey label">[[comm.user]]</span>
-								<span class="comm_text">[[comm.text]]</span>
-							</li>
-						</ul>
-						<div class="add">
-							<div class="ui action input">
-							  <input type="text" placeholder="Type your comment..." ng-model="post.comm_text" ng-focus="post.show_comm_btn=1" ng-blur="post.show_comm_btn=0;">
-							  <button class="ui green icon button" ng-click="post_comment(post)" ng-disabled="!post.show_comm_btn && !post.comm_text">
-							    <i class="send icon"></i>
-							  </button>
-							</div>
-						</div>
-					</div>
-					<div class="owner_actions" ng-if="post.is_owner" ng-click="delete_post(post)">
-						<button class="ui mini red button">Delete Post</button>
-					</div>
-				</li>
+				<post-dir ng-repeat="p in posts" data="[[p]]"></post-dir>
 			</ul>
 		</div>
 	</div>
