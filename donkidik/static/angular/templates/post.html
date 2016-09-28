@@ -1,0 +1,42 @@
+<li class="ui raised segment">
+	<div class="hdr ui message" ng-class="{'blue': post.post_type == 1, 'orange': post.post_type == 2}">
+		<i class="ui hdricon icon" ng-class="{'info circle': post.post_type == 1, 'announcement': post.post_type == 2}"></i>
+		<div class="by">
+			<div>
+				<span><b>[[post.author.name]]</b></span>
+				<div class="user_score ui red label tiny">[[post.author.score]]</div>
+			</div>
+			<!--time-ago seconds="[[post.seconds_passed]]" date="[[post.date]]" time="[[post.time]]"></time-ago-->
+		</div>
+		<div class="rank">
+			<span>[[post.score]]</span>
+			<i class="caret up icon" ng-class="{upvoted: post.is_upvoted, disabled: post.is_owner}" ng-click="isDisabled() || post_upvote(post)" ng-disabled="post.is_owner"></i>
+			<i class="caret down icon" ng-class="{downvoted: post.is_downvoted, disabled: post.is_owner}" ng-click="isDisabled() || post_downvote(post)" ng-disabled="post.is_owner"></i>
+		</div>
+	</div>
+	<div class="content ui stacked segment">
+		<div class="spot_content" ng-show="post.knots && post.spot">
+			[[post.knots]] knots at [[post.spot]]<br>
+		</div>
+	[[post.text]]
+	</div>
+	<div class="comments ui segment">
+		<ul>
+			<li ng-repeat="comm in post.comments">
+				<span class="ui grey label">[[comm.user]]</span>
+				<span class="comm_text">[[comm.text]]</span>
+			</li>
+		</ul>
+		<div class="add">
+			<div class="ui action input">
+			  <input type="text" placeholder="Type your comment..." ng-model="post.comm_text" ng-focus="post.show_comm_btn=1" ng-blur="post.show_comm_btn=0;">
+			  <button class="ui green icon button" ng-click="post_comment(post)" ng-disabled="!post.show_comm_btn && !post.comm_text">
+			    <i class="send icon"></i>
+			  </button>
+			</div>
+		</div>
+	</div>
+	<div class="owner_actions" ng-if="post.is_owner" ng-click="delete_post(post)">
+		<button class="ui mini red button">Delete Post</button>
+	</div>
+</li>
