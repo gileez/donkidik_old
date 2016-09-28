@@ -263,7 +263,7 @@
 								};
 							},
 		    	link: function(scope, elem, attrs, ctrl){
-		    	debugger;	
+		    		scope.post = scope.data;
 				}
 			  };
 		});
