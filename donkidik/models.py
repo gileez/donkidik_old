@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import datetime
 
 POST_TYPE_GENERAL = 1
 POST_TYPE_REPORT = 2
@@ -67,6 +68,7 @@ class Post(models.Model):
                     'text': self.text,
                     'date': [ self.date.day,self.date.month,self.date.year],
                     'time': [ self.date.hour,self.date.minute,self.date.second],
+                    'seconds_passed': int((datetime.datetime.utcnow().replace(tzinfo=timezone.utc) - self.date).total_seconds()),
                     'comments': [ c.jsonify() for c in self.comments.all() ],
                     'score':self.score,
                     'post_id':self.pk,
@@ -74,8 +76,13 @@ class Post(models.Model):
                     'downvotes':[ u.pk for u in self.downvotes.all() ]
                 }
 
-        if user and user.id == self.author.id:
-            ret['is_owner'] = True
+        if user:
+            if user.id == self.author.id:
+                ret['is_owner'] = True
+            if user.id in ret['upvotes']:
+                ret['is_upvoted'] = True;
+            if user.id in ret['downvotes']:
+                ret['is_downvoted'] = True;
 
         if hasattr(self,'meta'):
             # there is a meta record for this post
@@ -88,35 +95,39 @@ class Post(models.Model):
         return ret
 
     def upvote(self, voting_user):
+        print "Voting user: %s" %voting_user.pk
+        adjust_score = 0
         if self.upvotes.filter(pk = voting_user.pk):
             self.upvotes.remove(voting_user)
             self.score -= 1
             self.author.profile.downvote()
-            return False
+            return -1
         if self.downvotes.filter(pk = voting_user.pk):
             self.downvotes.remove(voting_user)
             self.score+=1
             self.author.profile.upvote()
+            adjust_score = 1
         self.upvotes.add(voting_user)
         self.score+=1
         self.author.profile.upvote()
-        return True
+        return 1+adjust_score
 
     def downvote(self, voting_user):
+        adjust_score = 0
         if self.downvotes.filter(pk = voting_user.pk):
             self.downvotes.remove(voting_user)
             self.score+=1
             self.author.profile.upvote()
-            return False
-
+            return 1
         if self.upvotes.filter(pk = voting_user.pk):
             self.upvotes.remove(voting_user)
             self.score -= 1
             self.author.profile.downvote()
+            adjust_score = -1
         self.downvotes.add(voting_user)
         self.score -= 1
         self.author.profile.downvote()
-        return True
+        return -1 + adjust_score
 
     def __str__(self):
         post_type = 'General' if self.post_type == POST_TYPE_GENERAL else 'Report'

@@ -25,3 +25,11 @@ ANGULAR
 for production:
 - login_required does not check user is_active
 - csrf fucking tokens. take them off globally!
+
+
+TAKS:
+- create a directive: name <time-ago> --> timeAgo (this is an angular convetion)
+api should return time in seconds passed
+type is element not attribute
+should accept one attribute which is named seconds so the element should look like
+<time-ago seconds="25"></time-ago>

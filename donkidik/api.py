@@ -88,7 +88,7 @@ def create_post(request):
 		uid = int(request.user.id)
 		post_type = data.get('post_type')
 		spot_id = data.get('spot_id')
-		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type=post_type, date=datetime.datetime.now())
+		p = Post.objects.create(author_id=uid, text=data.get('text'), post_type=post_type, date=timezone.now())
 		p.save()
 
 		post_type = int(post_type)
@@ -157,10 +157,7 @@ def get_posts(request):
 		ret['data'] = []
 		posts = Post.objects.all().order_by('modified')
 		for p in reversed(posts):
-			post_data = p.jsonify(user=request.user)
-			post_data['is_upvoted'] = False # TODO: giley
-			post_data['is_downvoted'] = False # TODO: giley
-			ret['data'].append(post_data)
+			ret['data'].append(p.jsonify(user=request.user))
 	return JsonResponse(ret)
 
 @csrf_exempt
@@ -262,19 +259,19 @@ def post_upvote(request, pid):
 	ret = {'status': 'FAIL'}
 	# TODO: make sure user has upvote permissions
 	pid = int(pid)
-	p = Post.objects.filter(id=pid)[0]
+	p = Post.objects.get(id=pid)
 	if not p:
 		ret['error'] = 'post not found'
 		return JsonResponse(ret)
-	# upvote this post
-	ret['change_score'] = 1 if p.upvote(request.user) else -1
 	# get upvote score - how many credits do we need to add based on who is making the vote
 	# call function to upvote this user
 	#p.author.upvote()
-	# save changes - TODO: find out if this is necessary
 	#p.author.save()
+	# upvote this post
+	ret['change_score'] = p.upvote(request.user)
 	p.save()
 	ret['status'] = 'OK'
+	ret['uid'] = request.user.pk
 	return JsonResponse(ret)
 
 @csrf_exempt
@@ -282,18 +279,19 @@ def post_upvote(request, pid):
 def post_downvote(request, pid):
 	ret = {'status': 'FAIL'}
 	pid = int(pid)
-	p = Post.objects.filter(id=pid)[0]
+	p = Post.objects.get(id=pid)
 	if not p:
 		ret['error'] = 'post not found'
 		return JsonResponse(ret)
-	# upvote this post
-	ret['change_score'] = -1 if p.downvote(request.user) else 1
-	p.save()
 	# TODO
 	# get downvote score - how many credits do we need to add based on who is making the vote
 	# call function to downvote this user
 	#p.author.downvote()
+	# upvote this post
+	ret['change_score'] = p.downvote(request.user)
+	p.save()
 	ret['status'] = 'OK'
+	ret['uid'] = request.user.pk
 	return JsonResponse(ret)
 
 @csrf_exempt
