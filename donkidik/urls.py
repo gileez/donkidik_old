@@ -50,7 +50,7 @@ urlpatterns = [
     # update post
     url(r'api/post/update/(?P<pid>[0-9]+)/$', api.update_post),
     # specific user posts
-    url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
+    #url(r'api/posts/(?P<uid>[0-9]+)/$', api.user_posts),
     # all posts
     url(r'api/posts/all/$', api.get_posts),
     # specific user posts

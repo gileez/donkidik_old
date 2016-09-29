@@ -1,9 +1,9 @@
-<li class="ui raised segment">
+<li class="ui raised segment" ng-repeat="post in posts">
 	<div class="hdr ui message" ng-class="{'blue': post.post_type == 1, 'orange': post.post_type == 2}">
 		<i class="ui hdricon icon" ng-class="{'info circle': post.post_type == 1, 'announcement': post.post_type == 2}"></i>
 		<div class="by">
 			<div>
-				<span><b>[[post.author.name]]</b></span>
+				<span><b><a href="/user/[[post.author.id]]">[[post.author.name]]</a></b></span>
 				<div class="user_score ui red label tiny">[[post.author.score]]</div>
 			</div>
 			<time-ago seconds="[[post.seconds_passed]]" date="[[post.date]]" time="[[post.time]]"></time-ago>

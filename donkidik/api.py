@@ -165,17 +165,18 @@ def get_posts(request):
 @login_required
 def get_user_posts(request,uid):
 	# gets all posts and returns them via ret['data']
+	uid = int(uid)
 	ret = {'status':'OK'}
 	if not request.user.is_authenticated():
 		ret['error'] = "User is not logged in"
 		return JsonResponse(ret)
 	else:
 		ret['data'] = []
-		posts = Post.objects.all().order_by('modified')
+		posts = Post.objects.filter(author_id=uid).order_by('modified')
 		for p in reversed(posts):
 			ret['data'].append(p.jsonify(user=request.user))
 	return JsonResponse(ret)
-	
+
 @csrf_exempt
 def get_post_comments(request, post_id):
 	ret = {'status': 'FAIL'}

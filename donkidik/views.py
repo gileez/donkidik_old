@@ -16,18 +16,6 @@ def index(request):
 def home(request):
 	return render(request, 'home.html')
 
-# @login_required
-# def home_old(request):
-# 	posts = Post.objects.all()
-# 	context={'posts':[]}
-# 	for p in posts:
-# 		context['posts'].append({	'author': p.author.username,
-# 									'text':p.text,
-# 									'post_type': p.post_type
-# 								})
-# 	return render(request, 'home.html',context)
-
-
 @login_required
 def userProfile(request,uid):
 	uid = int(uid)
@@ -40,7 +28,9 @@ def userProfile(request,uid):
 	userP = user[0].profile
 	if not userP:
 		print "User %s has no profile" %uid
+
 	context = userP.jsonify()
+	context['uid'] = uid
 	if own_profile:
 		context['own'] = True
 	#return JsonResponse(context)
