@@ -8,8 +8,9 @@
 	angular.module('donkidik')
 		.factory('postService', function($http){
 			return {
-				get_posts: function(uid){
+				get_posts: function(uid,pid){
 					if (uid) var url = '/api/posts/' + uid +'/';
+					else if (pid) var url = '/api/posts/' + pid + '/';
 					else var url = '/api/posts/all/';
 					return $http.get(url).then(function(res){
 						if (_is_success(res)) {

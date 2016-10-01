@@ -13,6 +13,7 @@ POST_TYPES = [
 
 class UserProfile(models.Model):
     user = models.OneToOneField('auth.User',related_name='profile', null=False, primary_key=True)
+    avatar = models.ImageField(upload_to = 'static/avatars/', default = '/static/avatars/default.jpg')
     follows = models.ManyToManyField('self', related_name='followed_by', symmetrical=False)
     score = models.IntegerField(default=0)
     # TODO:
@@ -37,8 +38,8 @@ class UserProfile(models.Model):
                         'username': self.user.username,
                         'score': self.score,
                         'follows': [u.pk for u in self.follows.all() ],
-                        'followed_by': [u.pk for u in self.followed_by.all()]
-                        # TODO : picture
+                        'followed_by': [u.pk for u in self.followed_by.all()],
+                        'avatar': self.avatar.url
                                                             }
         return userJson
 
@@ -68,7 +69,8 @@ class Post(models.Model):
         ret = {     'post_type':self.post_type,
                     'author': { 'name': self.author.first_name,
                                 'id': self.author.id,
-                                'score': self.author.profile.score
+                                'score': self.author.profile.score,
+                                'avatar': self.author.profile.avatar.url
                                 },
                     'text': self.text,
                     'date': [ self.date.day,self.date.month,self.date.year],

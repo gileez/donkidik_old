@@ -144,7 +144,6 @@
 			};
 
 			$scope.post_upvote = function(post,uid){
-				alert("thats why");
 				postService.post_upvote(post.post_id).then(function(res){
 					if (res.status=='OK'){
 						post.score += res.change_score;

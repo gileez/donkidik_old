@@ -10,7 +10,6 @@
 PROBLEMS
 ========================
 - follows field in admin looks all wrong
-- on macbook there is no call to get_posts_from_server once post has been made. WTF?
 
 ========================
 ANGULAR
@@ -21,6 +20,13 @@ ANGULAR
 - where do i insert the serialization code so that i don't need to copy paste it to every single html file?
 - difference between ng-show and ng-if
 - ng-disabled not working on comment text
+- ng-repeat inside directive breaks inner scope and uses extrnal scope
+
+
+AVATAR questions:
+- how do i prevent filename collisions?
+- how do i give users trimming options for their images?
+- how do i downsize the files?
 
 for production:
 - login_required does not check user is_active

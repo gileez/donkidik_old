@@ -3,6 +3,7 @@
 <head>
 	<title>donkidik</title>
 	<link rel="stylesheet" href="/static/semantic/dist/semantic.min.css">
+	<link rel="stylesheet" href="/static/css/post.css">
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.1/angular.min.js"></script>
 	<script type="text/javascript" src="static/angular/JSONfixer.js"></script>
 	<script type="text/javascript" src="static/angular/postsService.js"></script>
@@ -28,40 +29,6 @@
 		#main #new_post_cont textarea{height:50px;min-height:0;line-height:auto;}
 		#main #new_post_cont .sbmt{position: absolute;right:0;}
 		#main #new_post_cont select{margin:5px 0;}
-		#main .posts{position: relative;}
-		#main .posts .loading{padding:150px;text-align:center;font-size:22px;}
-		#main .posts > ul, #main .posts > ul > li{list-style:none;padding:0;margin:0;}
-		#main .posts > ul > li{margin:25px 0;position: relative;padding:35px 25px;}
-		#main .posts > ul > li.general{}
-		#main .posts > ul > li.report{}
-		#main .posts > ul > li .hdr{position: relative; padding-bottom: 5px;}
-		#main .posts > ul > li .hdr .hdricon{font-size:23px;display: inline-block; position:relative; top:-8px; }
-		#main .posts > ul > li .hdr .by{display: inline-block; position: relative;top:-4px;left:-5px;}
-		#main .posts > ul > li .hdr .by a{color:inherit;}
-		#main .posts > ul > li .hdr .by a:hover{opacity:0.7;text-decoration: underline;}
-		#main .posts > ul > li .hdr .by .user_score{font-size: 10px; position:relative; top:-10px;padding:3px;}
-		#main .posts > ul > li .hdr .by .time {font-size:10px;}
-		#main .posts > ul > li .hdr .rank{position: absolute;top:15px;right:10px;width:50px;text-align:center;}
-		#main .posts > ul > li .hdr .rank span{font-weight:bold;font-size:14px;}
-		#main .posts > ul > li .hdr .rank i{position: absolute;left:50%;transform:translateX(-50%);-webkit-transform:translateX(-50%);-moz-transform:translateX(-50%);cursor:pointer;}
-		#main .posts > ul > li .hdr .rank i.up{top:-11px;}
-		#main .posts > ul > li .hdr .rank i.upvoted {color: green;}
-		#main .posts > ul > li .hdr .rank i.down{bottom:-9px;}
-		#main .posts > ul > li .hdr .rank i.downvoted {color:red;}
-		#main .posts > ul > li .hdr .rank i.selected{color:#000;}
-		#main .posts > ul > li .hdr .rank i.disabled{color:gray;}
-		#main .posts > ul > li .content{}
-		#main .posts > ul > li .comments{padding-top:10px;}
-		#main .posts > ul > li .comments ul{list-style:none;padding:0;margin:0;}
-		#main .posts > ul > li .comments ul li{list-style:none;margin:0;border-bottom:solid 1px #f1f1f1;padding:15px 0;}
-		#main .posts > ul > li .comments ul li:last-of-type{border-bottom:none;}
-		#main .posts > ul > li .comments ul li .label{}
-		#main .posts > ul > li .comments ul li .comm_text{}
-		#main .posts > ul > li .comments .add{}
-		#main .posts > ul > li .comments .add .action.input{width:100%;}
-		#main .posts > ul > li .comments .add .action.input input{width:100%;}
-		#main .posts > ul > li .owner_actions{}
-		#main .posts > ul > li .owner_actions button{float:right;}
 	</style> 
 </head>
 <body>
@@ -99,7 +66,7 @@
 				Loading Posts...
 			</div>
 			<ul ng-show="posts_loaded">
-				<post-dir posts="posts" postsloaded="posts_loaded"></post-dir>
+				<post-dir ng-repeat="post in posts" data="post"></post-dir>
 			</ul>
 		</div>
 	</div>

@@ -1,4 +1,5 @@
 from models import *
+from forms import ProfileForm
 import views
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 import json, datetime
 #TODO import db
 
@@ -163,21 +165,40 @@ def get_posts(request):
 
 @csrf_exempt
 @login_required
-def get_user_posts(request,uid):
+def get_one_post(request,pid):
 	# gets all posts and returns them via ret['data']
-	uid = int(uid)
-	ret = {'status':'OK'}
+	print pid
+	print "ok then"
+	ret = {'status':'FAIL'}
 	if not request.user.is_authenticated():
 		ret['error'] = "User is not logged in"
 		return JsonResponse(ret)
 	else:
 		ret['data'] = []
-		posts = Post.objects.filter(author_id=uid).order_by('modified')
+		p = get_object_or_404(Post,pk=pid)
+		ret['data'].append(p.jsonify(user=request.user))
+		ret['status'] = 'OK'
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def get_user_posts(request,uid):
+	# gets all posts and returns them via ret['data']
+	uid = int(uid)
+	ret = {'status':'OK',
+			'data':[]}
+	if not request.user.is_authenticated():
+		ret['error'] = "User is not logged in"
+		return JsonResponse(ret)
+	else:
+		postsOwner = get_object_or_404(User,pk=uid)
+		posts = Post.objects.filter(author=postsOwner).order_by('modified')
 		for p in reversed(posts):
 			ret['data'].append(p.jsonify(user=request.user))
 	return JsonResponse(ret)
 
 @csrf_exempt
+@login_required
 def get_post_comments(request, post_id):
 	ret = {'status': 'FAIL'}
 	if not request.user.is_authenticated():
@@ -221,6 +242,48 @@ def get_spots(request):
 	ret['status'] = 'OK'
 	return JsonResponse(ret)
 
+@csrf_exempt
+@login_required
+def change_avatar(request,uid):
+	ret = {'status': 'FAIL'}
+	print "change avatar..."
+	changeProfileForm = ProfileForm(request.POST, request.FILES)
+	if request.FILES:
+		print "got some files"
+	else:
+		print "no files"
+	if changeProfileForm.is_valid():
+		print "form is valid"
+		p = UserProfile.objects.get(user_id = uid)
+		p.avatar = changeProfileForm.cleaned_data['avatar']
+		p.save()
+		return HttpResponseRedirect('/user/' + uid +'/')
+	else:
+		print "form not valid"
+		
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def change_avatar_NOFORM(request,uid):
+	ret = {'status': 'FAIL'}
+	print "change avatar..."
+	try:
+		print dir(request)
+		if request.FILES:
+			print "got some files"
+			filename="test.jpg"
+			output_file = open(settings.PROJECT_PATH+"/" + filename,)
+			output_file.write(request.FILES['form_file'][0]['content'])
+			output_file.close()
+			return HttpResponseRedirect('/user/' + uid +'/')
+		else:
+			print "theres no request.FILES"
+
+	except:
+		print "caught an exception"
+		
+	return JsonResponse(ret)
 @csrf_exempt
 @login_required
 def follow(request, uid):

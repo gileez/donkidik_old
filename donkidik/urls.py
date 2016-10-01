@@ -44,7 +44,9 @@ urlpatterns = [
     # add post
     url(r'api/post/add/$', api.create_post),
     # GAL what is this for?
-    url(r'^api/post/(?P<post_id>[0-9]+)/comments/$', api.get_post_comments),
+    url(r'^api/post/(?P<pid>[0-9]+)/comments/$', api.get_post_comments),
+    # get specific post
+    url(r'^api/post/(?P<pid>[0-9]+)/$', api.get_one_post),
     # remove post
     url(r'api/post/remove/(?P<pid>[0-9]+)/$', api.remove_post),
     # update post
@@ -59,6 +61,8 @@ urlpatterns = [
     #url(r'api/post/types/$', api.get_post_types),
     # get spots: returns a json of all possible spots
     url(r'api/spots/all/$', api.get_spots),
+    # change profile image
+    url(r'api/user/(?P<uid>[0-9]+)/change_avatar/$', api.change_avatar),
     # follow
     url(r'api/user/(?P<uid>[0-9]+)/follow/$', api.follow),
     # unfollow

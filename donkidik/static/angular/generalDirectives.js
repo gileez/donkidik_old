@@ -5,8 +5,7 @@
 			return {
 		    	restrict: 'E',
 		    	scope: {
-		    		posts: '=posts',
-		    		posts_loaded:'=postsloaded'
+		    		post: '=data'
 		    	},
 		    	replace: 'true',
 		     	templateUrl: '/static/angular/templates/post.html',
@@ -19,9 +18,9 @@
 								$scope.selected_post_type = 'general';
 								$scope.new_post_error = '';
 
-								$scope.get_posts = function(uid){
+								$scope.get_posts = function(uid, pid){
 									$scope.posts = [];
-									postService.get_posts(uid).then(function(res){
+									postService.get_posts(uid, pid).then(function(res){
 										if (res.success) {
 											$scope.posts = res.posts;
 											$scope.posts_loaded = true;
@@ -76,7 +75,6 @@
 								};
 
 								$scope.post_upvote = function(post,uid){
-									alert("in directive");
 									postService.post_upvote(post.post_id).then(function(res){
 										if (res.status=='OK'){
 											post.score += res.change_score;
@@ -144,9 +142,9 @@
 									});
 								};
 							},
-		    	link: function(scope, elem, attrs,ctrl){
-		    		if (attrs.uid){
-		    			scope.get_posts(attrs.uid);
+		    	link: function(scope, elem, attr){
+		    		if (attr.uid || attr.pid){
+		    			scope.get_posts(attr.uid, attr.pid);
 		    		}
 		    		//scope.post = scope.data;
 				}
@@ -159,37 +157,40 @@
 		.directive('timeAgo', function() {
 			return {
 		    	restrict: 'E',
-		    	scope: true,
+		    	scope: {
+		    				
+		    				taDate:'=postdate',
+		    				taTime:'=posttime'
+		    	},
 		    	replace: 'true',
 		     	template: '<div class="time">[[time_msg]]</div>',
-		    	link: function(scope, elem, attrs){
+		    	link: function(scope, elem, attr){
 		    		scope.time_msg = 'not set';
 			      	var 	month_time = 30*24*60*60,
 			      			day_time = 24*60*60,
 			      			hour_time = 3600,
-			      			post_date = ("0" + attrs.date[0]).substr(-2,2) + '/' + ("0" + attrs.date[1]).substr(-2,2) + '/' + attrs.date[2].substr(-2,2),
-			      			post_time = ("0" + attrs.time[0]).substr(-2,2) + ':' + ("0" + attrs.time[1]).substr(-2,2);
-
-			      	if ( attrs.seconds > month_time ) scope.time_msg = post_date + " at " + post_time; //more than a month
-			      	else if ( attrs.seconds > day_time ){ // more than a day
-			      		var days = Math.floor( attrs.seconds / day_time);
+			      			post_date = ("0" + scope.taDate[0]).substr(-2,2) + '/' + ("0" + scope.taDate[1]).substr(-2,2) + '/' + String(scope.taDate[2]).substr(-2,2)
+			      			post_time = ("0" + scope.taTime[0]).substr(-2,2) + ':' + ("0" + scope.taTime[1]).substr(-2,2);
+			      	if ( attr.seconds > month_time ) scope.time_msg = post_date + " at " + post_time; //more than a month
+			      	else if ( attr.seconds > day_time ){ // more than a day
+			      		var days = Math.floor( attr.seconds / day_time);
 			      		if (days == 1) scope.time_msg = "yesterday at" + post_time;
 			      		if (6 <= days <=8 ) scope.time_msg = "about a week ago";
 			      		else scope.time_msg = days + " days ago at " + post_time;
 			      	}
-			      	else if ( attrs.seconds > hour_time){
-			      		var hours = Math.floor(attrs.seconds / hour_time);
+			      	else if ( attr.seconds > hour_time){
+			      		var hours = Math.floor(attr.seconds / hour_time);
 			      		if (hours == 1) scope.time_msg = "about an hour ago";
 			      		else scope.time_msg = "about " + hours + " hours ago";
 			      	}
-			      	else if ( attrs.seconds > 60){
-			      		var minutes = Math.floor(attrs.seconds / 60);
+			      	else if ( attr.seconds > 60){
+			      		var minutes = Math.floor(attr.seconds / 60);
 			      		if (minutes == 1) scope.time_msg = "about a minute ago";
 			      		else scope.time_msg = "about " + minutes + " minutes ago";
 			      	}
 			      	else{
-			      		if (attrs.seconds == 1) scope.time_msg = "about a second ago";
-			      		else scope.time_msg = "about " + attrs.seconds + " seconds ago";
+			      		if (attr.seconds == 1) scope.time_msg = "about a second ago";
+			      		else scope.time_msg = "about " + attr.seconds + " seconds ago";
 			      	}
 			    }
 			  };
