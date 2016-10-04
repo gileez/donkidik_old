@@ -10,10 +10,12 @@ POST_TYPES = [
     (POST_TYPE_GENERAL, 'General'),
     (POST_TYPE_REPORT, 'Report'),
 ]
+def user_dir(instance, filename):
+    return 'static/avatars/{0}/{1}'.format(instance.user.id, filename)
 
 class UserProfile(models.Model):
     user = models.OneToOneField('auth.User',related_name='profile', null=False, primary_key=True)
-    avatar = models.ImageField(upload_to = 'static/avatars/', default = '/static/avatars/default.jpg')
+    avatar = models.ImageField(upload_to = user_dir, default = '/static/avatars/default.jpg')
     follows = models.ManyToManyField('self', related_name='followed_by', symmetrical=False)
     score = models.IntegerField(default=0)
     # TODO:
@@ -34,6 +36,7 @@ class UserProfile(models.Model):
     def jsonify(self):
         userJson = {
                         'first_name': self.user.first_name,
+                        'last_name': self.user.last_name,
                         'email': self.user.email,
                         'username': self.user.username,
                         'score': self.score,

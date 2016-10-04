@@ -6,27 +6,56 @@
 - think about: how does a forecast work? per spot? has several spots? automatically creates a session?
 - what are the conditions to auto create a session? this is an issue for both forecasts and reports. a report of 0 wind for example should not generate a session. maybe add a "rideable" flag to the report?
 
+=======
+TODO
+=======
+private MESSAGING:
+	- ???
+PROFILE page:
+	- profile page should be different if is_owner
+	- allow user to change user detail
+	- when replacing profile image show new image
+	- handle image: crop \ resize etc.
+	- friends
+SPOTS:
+	- add a google map location for spots
+	- create spot page
+MENU:
+	- home \ feed
+	- forecasts
+	- market
+	- lost + found
+	- media
+	- logout
+POSTS & COMMENTS:
+	- show less \\ show more
+	- edit post
+	- ui for comments: Pprofile pic
+	- private comment (?)
+LOGIN:
+	- change design to use semantic ui
+- create permissions based on user score
+
+
 ========================
 PROBLEMS
 ========================
 - follows field in admin looks all wrong
+- comment post turns green on focus
+- 404 on profile avatar
 
 ========================
 ANGULAR
 =======================
-- should i move all functionality to angular? for example making a new post. it only appears in ui once. what is the benefit?
 - correct way to handle callbacks: then \ success \ error
 - should i avoid pulling stuff from the db? if i make a new post should it be brought back from db or just populate ui with local data?
-- where do i insert the serialization code so that i don't need to copy paste it to every single html file?
 - difference between ng-show and ng-if
-- ng-disabled not working on comment text
 - ng-repeat inside directive breaks inner scope and uses extrnal scope
 
 
 AVATAR questions:
-- how do i prevent filename collisions?
-- how do i give users trimming options for their images?
-- how do i downsize the files?
++ how do i give users trimming options for their images? A: UI based trimming of file. you can then upload both versions
++ how do i downsize the files? A: pillow
 
 for production:
 - login_required does not check user is_active

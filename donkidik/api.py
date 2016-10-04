@@ -1,6 +1,6 @@
 from models import *
 from forms import ProfileForm
-import views
+import views, settings
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -10,7 +10,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.core import serializers
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-import json, datetime
+import json, datetime, os
 #TODO import db
 
 @csrf_exempt
@@ -57,16 +57,16 @@ def logout_req(request):
 	logout(request)
 	return HttpResponseRedirect('/')
 
-def user_posts(request,uid):
-	print "welcome user_posts %s" %uid
-	posts = Post.objects.filter(author=uid)
-	for p in posts:
-		print p
-	data = serializers.serialize('json', Post.objects.filter(author=uid), fields=('text','author'))
-	ret = {'status':'OK',
-			'data':data
-			}
-	return JsonResponse(ret)
+# def user_posts(request,uid):
+# 	print "welcome user_posts %s" %uid
+# 	posts = Post.objects.filter(author=uid)
+# 	for p in posts:
+# 		print p
+# 	data = serializers.serialize('json', Post.objects.filter(author=uid), fields=('text','author'))
+# 	ret = {'status':'OK',
+# 			'data':data
+# 			}
+# 	return JsonResponse(ret)
 
 @csrf_exempt
 def create_post(request):
@@ -120,8 +120,6 @@ def remove_post(request, pid):
 		ret['error'] = 'Post not found'
 		return JsonResponse(ret)
 	# TODO check for special deletion permissions
-	print p.author.id
-	print request.user.id
 	if ( p.author.id != request.user.id ) and not request.user.is_superuser:
 		ret['error'] = 'Attempting to delete OPP'
 		return JsonResponse(ret)
@@ -167,8 +165,6 @@ def get_posts(request):
 @login_required
 def get_one_post(request,pid):
 	# gets all posts and returns them via ret['data']
-	print pid
-	print "ok then"
 	ret = {'status':'FAIL'}
 	if not request.user.is_authenticated():
 		ret['error'] = "User is not logged in"
@@ -199,7 +195,7 @@ def get_user_posts(request,uid):
 
 @csrf_exempt
 @login_required
-def get_post_comments(request, post_id):
+def get_post_comments(request, pid):
 	ret = {'status': 'FAIL'}
 	if not request.user.is_authenticated():
 		ret['error'] = "User is not logged in"
@@ -207,7 +203,7 @@ def get_post_comments(request, post_id):
 	else:
 
 		try:
-			post = Post.objects.get(id=post_id)
+			post = Post.objects.get(id=pid)
 		except:
 			ret['error'] = 'Unknown post'
 			return JsonResponse(ret)
@@ -242,48 +238,80 @@ def get_spots(request):
 	ret['status'] = 'OK'
 	return JsonResponse(ret)
 
+# @csrf_exempt
+# @login_required
+# def change_avatar_FORM(request,uid):
+# 	ret = {'status': 'FAIL'}
+# 	print "change avatar..."
+# 	changeProfileForm = ProfileForm(request.POST, request.FILES)
+# 	if request.FILES:
+# 		print "got some files"
+# 	else:
+# 		print "no files"
+# 	if changeProfileForm.is_valid():
+# 		print "form is valid"
+# 		p = UserProfile.objects.get(user_id = uid)
+# 		p.avatar.url = p.avatar.url.replace('donkidik/','',1)
+# 		print (p.avatar.url)
+# 		p.avatar = changeProfileForm.cleaned_data['avatar']
+# 		p.save()
+# 		return HttpResponseRedirect('/user/' + uid +'/')
+# 	else:
+# 		print "form not valid"
+		
+# 	return JsonResponse(ret)
+
 @csrf_exempt
 @login_required
-def change_avatar(request,uid):
+def get_user_profile(request,uid):
+	# gets all posts and returns them via ret['data']
+	uid = int(uid)
+	ret = {'status':'FAIL',
+			'user':[]}
+	if not request.user.is_authenticated():
+		ret['error'] = "User is not logged in"
+		return JsonResponse(ret)
+	else:
+		user = get_object_or_404(User,pk=uid)
+		ret['user'] = user.profile.jsonify()
+		ret['status'] = 'OK'
+		ret['user']['is_owner'] = request.user.id == uid 
+	return JsonResponse(ret)
+
+@csrf_exempt
+@login_required
+def edit_profile(request,uid):
+	print "edit_profile()"
 	ret = {'status': 'FAIL'}
-	print "change avatar..."
-	changeProfileForm = ProfileForm(request.POST, request.FILES)
+	# TODO: make sure there's stuff to change
+	p = UserProfile.objects.get(user_id = uid)
+	changed = False;
+	if request.POST['first_name']:
+		p.user.first_name = request.POST['first_name']
+		changed = True
+	if request.POST['last_name']:
+		p.user.last_name = request.POST['last_name']
+		changed = True
+	if request.POST['email']:
+		p.user.email = request.POST['email']
+		changed = True
+	if changed:
+		p.user.save() #SAVE User instance
+
 	if request.FILES:
-		print "got some files"
+		p.avatar = request.FILES['avatar']
+		print "there are files, %s and %s" %(request.FILES['avatar'].name, p.avatar.url)
+		# filename=request.FILES['avatar'].name
+		# print settings.PROJECT_ROOT+ " and " + request.FILES['avatar'].name 
+		# output_file = open(os.path.join(settings.PROJECT_ROOT,p.avatar.url),'w')
+		# for chunk in request.FILES['avatar']:
+		# 	output_file.write(chunk)
+		# output_file.close()
 	else:
-		print "no files"
-	if changeProfileForm.is_valid():
-		print "form is valid"
-		p = UserProfile.objects.get(user_id = uid)
-		p.avatar = changeProfileForm.cleaned_data['avatar']
-		p.save()
-		return HttpResponseRedirect('/user/' + uid +'/')
-	else:
-		print "form not valid"
-		
-	return JsonResponse(ret)
+		print "there are no request.FILES"
+	p.save() # SAVE profile instance
+	return HttpResponseRedirect('/user/' + uid +'/')
 
-@csrf_exempt
-@login_required
-def change_avatar_NOFORM(request,uid):
-	ret = {'status': 'FAIL'}
-	print "change avatar..."
-	try:
-		print dir(request)
-		if request.FILES:
-			print "got some files"
-			filename="test.jpg"
-			output_file = open(settings.PROJECT_PATH+"/" + filename,)
-			output_file.write(request.FILES['form_file'][0]['content'])
-			output_file.close()
-			return HttpResponseRedirect('/user/' + uid +'/')
-		else:
-			print "theres no request.FILES"
-
-	except:
-		print "caught an exception"
-		
-	return JsonResponse(ret)
 @csrf_exempt
 @login_required
 def follow(request, uid):

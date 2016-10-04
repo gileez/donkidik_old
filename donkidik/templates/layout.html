@@ -1,37 +1,47 @@
 <!doctype html>
+<html ng-app="donkidik">
 <title>DonkiDik</title>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-<!--link rel="stylesheet" href="/static/css/bootstrap.css"-->
-<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-
+<link rel="stylesheet" href="/static/semantic/dist/semantic.min.css">
+<link rel="stylesheet" href="/static/css/post.css">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.1/angular.min.js"></script>
+<script type="text/javascript" src="/static/angular/JSONfixer.js"></script>
 
 <style type="text/css">
 		@font-face {font-family: logo; src: url(/static/fonts/purisa.ttf);}
-		#main = {display:block; width: 100%; top:100px; background: #E2E2E2; padding: 100px 33.3%;}
-		.page {}
-		.page .top{ position: fixed; top: 0; left: 0; width: 100%; height:100px; display:block; color: white; background: teal; padding: 5px 20px; z-index:999999;}
-		.page .top #logo {font-family: logo; }
-		.page .top ul{list-style-type: none; padding: 0; margin: 0;}
-		.page .top ul li {display: inline; padding: 2px;}
-		.page .top ul li a{color: white;}
-		.page .top ul li a:hover{ color:teal; background:white;}
-		.glyphicon {top: 0;}
-
+		.page{}
+		.menu{width:150px !important;color:red;}
+		.menu .loggedin {margin-bottom: 30px; color:white !important;font-size: 10px !important; text-align: center !important;}
+		#logo {font-family: logo; color:white; text-align: center; margin-top:30px; margin-bottom:5px;}
+		.main{display:inline;}
 	</style>
 {% block head %}
 {% endblock %}
-<div class="container-nobootstrap">
+<div class="page_container">
 	<div class="page">
-		<div class="top">
-	 		<h1 id="logo">donkidik</h1>
-	 			<div class="menu"><ul>
-	 		 	{% if user.is_authenticated %}
-	 				<li>Welcome {{ user.first_name }}</li>|
-	 				<li><a href="api/logout">Logout</a></li>
-	 			{% endif %}
-	 			</ul>
-	 			</div>
-	 	</div>
+		<div class="ui left vertical fixed inverted menu">
+			<div id="logo_container">
+			<h1 id="logo">donkidik</h1>
+			<div class="item loggedin">
+			logged in as {{user.first_name}}
+			</div>
+			<ul>
+	 		 		{% if user.is_authenticated %}
+	 					<li>Welcome {{ user.first_name }}</li>|
+	 					<li><a href="api/logout">Logout</a></li>
+	 				{% endif %}
+	 		</ul>
+	 		</div>
+	 		<a class="item" href="/">Feed</a>
+  			<a class="item disabled">Forecasts</a>
+  			<a class="item disabled">Market</a>
+  			<a class="item disabled">Lost & Found</a>
+  			<a class="item disabled">Media</a>
+  			<a class="item" href="/api/logout/">Logout</a>
+		</div>
+		<div class="main">
 	  	{% block body %}{% endblock %}
+	  	</div>
 	</div>
 </div>
+</html>

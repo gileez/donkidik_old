@@ -1,20 +1,15 @@
-<!doctype html>
-<html ng-app="donkidik">
-<head>
-	<title>donkidik</title>
+{% extends "layout.html" %}
+{% block head %}
 	<base href="/../../">
-	<link rel="stylesheet" href="static/semantic/dist/semantic.min.css">
-	<link rel="stylesheet" href="/static/css/post.css">
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.1/angular.min.js"></script>
-	<script type="text/javascript" src="static/angular/JSONfixer.js"></script>
 	<script type="text/javascript" src="static/angular/postsService.js"></script>
-	<!--script type="text/javascript" src="/../../static/angular/PostsPageController.js"></script-->
 	<script type="text/javascript">
 		(function(){
 			angular.module('donkidik')
 				.controller("profileController", function($scope, postService){
 					$scope.posts = [];
+					$scope.user = null;
 					$scope.posts_loaded=false;
+					$scope.error_msg = null;
 
 					$scope.get_posts = function(uid){
 						$scope.posts = [];
@@ -29,7 +24,19 @@
 							}
 						});
 					};
+
+					$scope.get_user_meta = function(uid){
+							postService.get_user_meta(uid).then(function(res){
+								if (res.success) {
+									$scope.user = res.user;
+								}
+								else{
+									$scope.error_msg = res.error
+								}
+							});
+					};
 					$scope.get_posts({{uid}});
+					$scope.get_user_meta({{uid}});
 				});
 		})();
 	</script>
@@ -39,15 +46,48 @@
 		body{padding:0;margin:0;}
 		#main{position: relative;width:550px;margin:0 auto;padding:50px 0;}
 		#main > h1{text-align:center;}
+		#main form .inputfile{width: 0.1px;height: 0.1px;opacity: 0;overflow: hidden;position: absolute;z-index:-1;}
+		#main form .inputfile+label{cursor: pointer;}
+		#main form .label{display: inline;background-color: #DCDCDC}
+		#main form input text{display:inline-block; overflow:hidden;}
+		#main form .data_cont{height: 200px;}
+		#main form .avatar_cont{width:200px;margin:0; display:inline;float:left;}
+		#main form .right_col{display:inline;float:left;}
+		#main form .avatar{width:150px;height:150px;position:relative;overflow:hidden; margin:5px;}
+		#main form .avatar img{width:inherit;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
+		#main form .submit{float:right;}
 	</style> 
-</head>
-<body>
+{% endblock %}
+{% block body %}
 	<div id="main" ng-controller="profileController">
-		<h1>DonkiDik</h1> 
-		<form action="/api/user/{{uid}}/change_avatar/" method="post" enctype = "multipart/form-data">
-			<input type="file" name="avatar" />
-			<input type="submit" value="save" />
-		</form>
+		<div class="edit_form ui form raised segment" ng-show="user.is_owner">
+			<form action="/api/user/{{uid}}/edit/" method="POST" enctype="multipart/form-data">
+				<div class="data_cont">
+					<div class="inline field avatar_cont">
+						<div class="avatar">
+							<img src="[[user.avatar]]" />
+						</div>
+						<input class="inputfile" type="file" name="avatar" id ="avatar">
+						<label for="avatar">Choose an image...</label>
+					</div>
+					<div class="right_col">
+						<div class="inline field">
+							<label>First Name</label>
+							<input type="text" name="first_name" placeholder="[[user.first_name]]" />
+						</div>
+						<div class="inline field">
+							<label>Last Name</label>
+							<input type="text" name="last_name" placeholder="[[user.last_name]]" />
+						</div>
+						<div class="inline field">
+							<label>E-mail</label>
+							<input type="text" name="email" placeholder="[[user.email]]" />
+						</div>
+					</div>
+				</div>
+				<button class="ui button submit" type="submit" value="save">Save changes</button>
+			</form>
+		</div>
 		<div class="posts">
 			<div class="loading" ng-show="!posts_loaded">
 				Loading Posts...
@@ -57,5 +97,4 @@
 			</ul>
 		</div>
 	</div>
-</body>
-</html>
+{% endblock %}

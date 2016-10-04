@@ -36,9 +36,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -131,7 +129,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-
+MEDIA_ROOT = '/home/gili/dev/donkidik/donkidik/donkidik/'
 STATIC_URL = '/static/'
 LOGIN_URL = '/login/'
 AUTH_PROFILE_MODULE = 'donkidik.UserProfile'

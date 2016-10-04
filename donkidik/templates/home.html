@@ -1,11 +1,7 @@
-<!doctype html>
-<html ng-app="donkidik">
-<head>
+{% extends "layout.html" %}
+
+{% block head %}
 	<title>donkidik</title>
-	<link rel="stylesheet" href="/static/semantic/dist/semantic.min.css">
-	<link rel="stylesheet" href="/static/css/post.css">
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.1/angular.min.js"></script>
-	<script type="text/javascript" src="static/angular/JSONfixer.js"></script>
 	<script type="text/javascript" src="static/angular/postsService.js"></script>
 	<script type="text/javascript" src="static/angular/PostsPageController.js"></script>
 	<script type="text/javascript" src="static/angular/generalDirectives.js"></script>
@@ -30,10 +26,9 @@
 		#main #new_post_cont .sbmt{position: absolute;right:0;}
 		#main #new_post_cont select{margin:5px 0;}
 	</style> 
-</head>
-<body>
+{% endblock %}
+{% block body %}
 	<div id="main" ng-controller="HomeController">
-		<h1>DonkiDik</h1>
 		
 		<div class="ui raised segment" id="new_post_cont">
 			<h4>Write a Post</h4>
@@ -70,8 +65,7 @@
 			</ul>
 		</div>
 	</div>
-</body>
-</html>
+{% endblock %}
 
 
 

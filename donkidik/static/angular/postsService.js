@@ -92,6 +92,16 @@
 					return $http.post(url).then(function(res){
 						return res.data;
 					});
+				},
+
+				get_user_meta: function(uid){
+					var url = '/api/user/' + uid + '/';
+					return $http.post(url).then(function(res){
+						return {
+									success: _is_success(res),
+									user: res.data.user
+								};
+					});
 				}
 			};
 		});

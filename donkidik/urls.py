@@ -62,7 +62,9 @@ urlpatterns = [
     # get spots: returns a json of all possible spots
     url(r'api/spots/all/$', api.get_spots),
     # change profile image
-    url(r'api/user/(?P<uid>[0-9]+)/change_avatar/$', api.change_avatar),
+    url(r'api/user/(?P<uid>[0-9]+)/edit/$', api.edit_profile),
+    # get user profile
+    url(r'api/user/(?P<uid>[0-9]+)/$', api.get_user_profile),
     # follow
     url(r'api/user/(?P<uid>[0-9]+)/follow/$', api.follow),
     # unfollow
