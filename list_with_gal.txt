@@ -1,0 +1,12 @@
+
+
+
+### - solve image 404 errors [[img.src]] etc. 
+- image upload mechanism - don't use ImageField - do it manually.
+- image upload form - use ajax.
+- image uploader: preview image.
+- when upvote / downvote score should update in ALL relevant posts / other items in the screen.
+- post isn't being removed after deletion.
+- image uploader: manipulate image.
+- main div isn't centered because of side menu.
+

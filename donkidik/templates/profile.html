@@ -1,4 +1,7 @@
 {% extends "layout.html" %}
+
+{% block menu_css %}profile{% endblock %}
+
 {% block head %}
 	<base href="/../../">
 	<script type="text/javascript" src="static/angular/postsService.js"></script>
@@ -10,6 +13,7 @@
 					$scope.user = null;
 					$scope.posts_loaded=false;
 					$scope.error_msg = null;
+					$scope.editing_picture = false;
 
 					$scope.get_posts = function(uid){
 						$scope.posts = [];
@@ -35,8 +39,106 @@
 								}
 							});
 					};
+
 					$scope.get_posts({{uid}});
 					$scope.get_user_meta({{uid}});
+				})
+
+				.directive('profileForm', function(){
+					return {
+						restrict: 'A',
+						link: function(scope, el, attrs){
+
+							var $txt_fname = $(el).find('input[name="first_name"]'),
+								$txt_lname = $(el).find('input[name="last_name"]'),
+								$txt_email = $(el).find('input[name="email"]'),
+								$fu_avatar = $(el).find('input[name="avatar"]'),
+								$btn_submit = $(el).find('button.submit');
+
+							$fu_avatar.change(function(){
+								if ($fu_avatar.val()) {
+
+									var file = $fu_avatar[0].files[0];
+									scope.$apply(function(){
+										
+										// set UI in edit mode
+										scope.editing_picture = true;
+										
+										// get the blob (local) url of the file
+										var blob_url =  window.URL.createObjectURL(file);
+										scope.picture_to_upload = blob_url;
+									});
+
+								}
+							});
+
+							$btn_submit.click(function(){
+								var fname = $txt_fname.val() || '',
+									lname = $txt_lname.val() || '',
+									email = $txt_email.val() || '';
+
+								// create new ajax object
+								var xhr = new XMLHttpRequest();
+
+								// request settings
+								xhr.open('POST', '/api/user/{{uid}}/edit/', true);
+
+								// upload finished handler
+								xhr.onload = function(){
+
+									// check server status
+									if (this.status == 200) {
+										
+										var res = JSON.parse(this.responseText);
+										if (res.status == 'OK') {
+											scope.$apply(function(){
+												scope.user = res.user;
+												$txt_fname.val('');
+												$txt_lname.val('');
+												$txt_email.val('');
+												$fu_avatar.val('');
+											});
+										}
+										else {
+											alert('Upload error: ' + res.error || 'Unknown');
+										}
+
+									}
+									else {
+										alert('UPLOAD ERROR');
+									}
+								};
+
+								// upload progress handler
+								xhr.upload.onprogress = function(e) {
+							        if (e.lengthComputable) {
+							        	// e.total, e.loaded
+							        	console.log('uploaded ' + e.loaded + ' out of ' + e.total);
+							        }
+							    }
+
+							    // upload error handler
+							    xhr.onerror = function(err){
+							    	alert('UPLOAD ERROR - ' + err);
+							    };
+
+							    // create a "form" object to upload to the server api
+							    var fd = new FormData();
+							    fd.append('first_name', fname);
+							    fd.append('last_name', lname);
+							    fd.append('email', email);
+
+							    if ($fu_avatar.val()) {
+							    	// if a file is chosen, add it to the form data
+							    	fd.append('avatar', $fu_avatar[0].files[0]);
+							    }
+
+							    xhr.setRequestHeader('x-requested-with', 'XMLHttpRequest');
+    							xhr.send(fd);
+							});
+
+						}
+					};
 				});
 		})();
 	</script>
@@ -46,29 +148,38 @@
 		body{padding:0;margin:0;}
 		#main{position: relative;width:550px;margin:0 auto;padding:50px 0;}
 		#main > h1{text-align:center;}
-		#main form .inputfile{width: 0.1px;height: 0.1px;opacity: 0;overflow: hidden;position: absolute;z-index:-1;}
-		#main form .inputfile+label{cursor: pointer;}
-		#main form .label{display: inline;background-color: #DCDCDC}
-		#main form input text{display:inline-block; overflow:hidden;}
-		#main form .data_cont{height: 200px;}
-		#main form .avatar_cont{width:200px;margin:0; display:inline;float:left;}
-		#main form .right_col{display:inline;float:left;}
-		#main form .avatar{width:150px;height:150px;position:relative;overflow:hidden; margin:5px;}
-		#main form .avatar img{width:inherit;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
-		#main form .submit{float:right;}
+		#main .form .inputfile{width: 0.1px;height: 0.1px;opacity: 0;overflow: hidden;position: absolute;z-index:-1;}
+		#main .form .inputfile+label{cursor: pointer;}
+		#main .form .label{display: inline;background-color: #DCDCDC}
+		#main .form input text{display:inline-block; overflow:hidden;}
+		#main .form .data_cont{height: 200px;}
+		#main .form .avatar_cont{width:200px;margin:0; display:inline;float:left;}
+		#main .form .right_col{display:inline;float:left;}
+		#main .form .avatar{width:150px;height:150px;position:relative;overflow:hidden; margin:5px;}
+		#main .form .avatar img{width:inherit;;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);}
+		#main .form .submit{float:right;}
 	</style> 
 {% endblock %}
 {% block body %}
 	<div id="main" ng-controller="profileController">
 		<div class="edit_form ui form raised segment" ng-show="user.is_owner">
-			<form action="/api/user/{{uid}}/edit/" method="POST" enctype="multipart/form-data">
+			{# <form class="form" action="/api/user/{{uid}}/edit/" method="POST" enctype="multipart/form-data"> #}
+			<div class="form" profile-form>
 				<div class="data_cont">
 					<div class="inline field avatar_cont">
-						<div class="avatar">
-							<img src="[[user.avatar]]" />
+						<div class="static" ng-show="!editing_picture">
+							<div class="avatar">
+								<img ng-src="[[user.avatar]]" />
+							</div>
+							<input class="inputfile" type="file" name="avatar" id ="avatar">
+							<label for="avatar">Choose an image...</label>
 						</div>
-						<input class="inputfile" type="file" name="avatar" id ="avatar">
-						<label for="avatar">Choose an image...</label>
+						<div class="editmode" ng-show="editing_picture">
+							<div class="avatar">
+								<img ng-src="[[picture_to_upload]]" />
+							</div>
+							<button class="ui mini button" ng-click="editing_picture=false;picture_to_upload=null">Cancel</button>
+						</div>
 					</div>
 					<div class="right_col">
 						<div class="inline field">
@@ -85,8 +196,9 @@
 						</div>
 					</div>
 				</div>
-				<button class="ui button submit" type="submit" value="save">Save changes</button>
-			</form>
+				<button class="ui button submit">Save changes</button>
+			</div>
+			{# </form> #}
 		</div>
 		<div class="posts">
 			<div class="loading" ng-show="!posts_loaded">

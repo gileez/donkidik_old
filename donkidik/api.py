@@ -280,12 +280,11 @@ def get_user_profile(request,uid):
 
 @csrf_exempt
 @login_required
-def edit_profile(request,uid):
-	print "edit_profile()"
+def edit_profile(request, uid):
 	ret = {'status': 'FAIL'}
 	# TODO: make sure there's stuff to change
-	p = UserProfile.objects.get(user_id = uid)
-	changed = False;
+	p = UserProfile.objects.get(user_id=uid)
+	changed = False
 	if request.POST['first_name']:
 		p.user.first_name = request.POST['first_name']
 		changed = True
@@ -298,19 +297,27 @@ def edit_profile(request,uid):
 	if changed:
 		p.user.save() #SAVE User instance
 
-	if request.FILES:
-		p.avatar = request.FILES['avatar']
-		print "there are files, %s and %s" %(request.FILES['avatar'].name, p.avatar.url)
-		# filename=request.FILES['avatar'].name
-		# print settings.PROJECT_ROOT+ " and " + request.FILES['avatar'].name 
-		# output_file = open(os.path.join(settings.PROJECT_ROOT,p.avatar.url),'w')
-		# for chunk in request.FILES['avatar']:
-		# 	output_file.write(chunk)
-		# output_file.close()
+	if request.FILES and 'avatar' in request.FILES:
+		avatar_file = request.FILES['avatar']
+		filename = p.unique_image_path()
+		print "saving image to {}".format(filename)
+
+		destination = open(filename, 'wb+')
+		for chunk in avatar_file.chunks():
+			destination.write(chunk)
+		destination.close()
+		print "saved"
+
+		p.avatar = 'static/avatars/{}/{}'.format(p.user.id, filename[filename.rfind('/') + 1:])
+		p.save()
 	else:
 		print "there are no request.FILES"
-	p.save() # SAVE profile instance
-	return HttpResponseRedirect('/user/' + uid +'/')
+	
+	ret['status'] = 'OK'
+	ret['user'] = p.jsonify()
+	ret['user']['is_owner'] = (request.user.id == int(uid))
+	return JsonResponse(ret)
+	#return HttpResponseRedirect('/user/' + uid + '/')
 
 @csrf_exempt
 @login_required

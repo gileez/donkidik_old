@@ -2,6 +2,9 @@ from django.db import models
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import settings
+import os.path
+import uuid
 import datetime
 
 POST_TYPE_GENERAL = 1
@@ -10,22 +13,37 @@ POST_TYPES = [
     (POST_TYPE_GENERAL, 'General'),
     (POST_TYPE_REPORT, 'Report'),
 ]
+
+
 def user_dir(instance, filename):
     return 'static/avatars/{0}/{1}'.format(instance.user.id, filename)
 
+
 class UserProfile(models.Model):
-    user = models.OneToOneField('auth.User',related_name='profile', null=False, primary_key=True)
-    avatar = models.ImageField(upload_to = user_dir, default = '/static/avatars/default.jpg')
+    user = models.OneToOneField('auth.User', related_name='profile', null=False, primary_key=True)
+    # avatar = models.ImageField(upload_to=user_dir, default='/static/avatars/default.jpg')
+    avatar = models.CharField(max_length=1024, null=True, blank=True)
     follows = models.ManyToManyField('self', related_name='followed_by', symmetrical=False)
     score = models.IntegerField(default=0)
     # TODO:
     # image, current equipment, following spots, total votes, badges, instructor
 
+    def profile_pic(self):
+        default_avatar_url = '/static/avatars/default.jpg'
+        return self.avatar if self.avatar else default_avatar_url
+
+    def unique_image_path(self):
+        random_filename = "{}.jpg".format(str(uuid.uuid4())[:8])
+        file_path = "{}/donkidik/static/avatars/{}/{}".format(settings.BASE_DIR, self.user.id, random_filename)
+        if os.path.isfile(file_path):
+            return unique_image_path()
+        return file_path
+
     def upvote(self):
-        print "got an upvote request, score is %s" %self.score
+        print "got an upvote request, score is %s" % self.score
         self.score += 1
         self.save()
-        print "now its %s" %self.score
+        print "now its %s" % self.score
         return
 
     def downvote(self):
@@ -35,19 +53,19 @@ class UserProfile(models.Model):
 
     def jsonify(self):
         userJson = {
-                        'first_name': self.user.first_name,
-                        'last_name': self.user.last_name,
-                        'email': self.user.email,
-                        'username': self.user.username,
-                        'score': self.score,
-                        'follows': [u.pk for u in self.follows.all() ],
-                        'followed_by': [u.pk for u in self.followed_by.all()],
-                        'avatar': self.avatar.url
-                                                            }
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+            'email': self.user.email,
+            'username': self.user.username,
+            'score': self.score,
+            'follows': [u.pk for u in self.follows.all()],
+            'followed_by': [u.pk for u in self.followed_by.all()],
+            'avatar': self.avatar
+        }
         return userJson
 
     def __str__(self):
-        return '<%s - UserProfile>' %self.user.first_name
+        return '<%s - UserProfile>' % self.user.first_name
 
 @receiver(post_save, sender='auth.User')
 def create_profile(sender, **kwargs):
@@ -73,7 +91,7 @@ class Post(models.Model):
                     'author': { 'name': self.author.first_name,
                                 'id': self.author.id,
                                 'score': self.author.profile.score,
-                                'avatar': self.author.profile.avatar.url
+                                'avatar': self.author.profile.avatar
                                 },
                     'text': self.text,
                     'date': [ self.date.day,self.date.month,self.date.year],

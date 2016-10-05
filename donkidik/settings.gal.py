@@ -110,7 +110,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
-MEDIA_ROOT = '/home/gal/dev/giley/donkidik/'
+MEDIA_ROOT = '/Users/gal/dev/giley/donkidik/'
 STATIC_URL = '/static/'
 LOGIN_URL = '/login/'
 AUTH_PROFILE_MODULE = 'donkidik.UserProfile'

@@ -21,27 +21,27 @@
 	<div class="page">
 		<div class="ui left vertical fixed inverted menu">
 			<div id="logo_container">
-			<h1 id="logo">donkidik</h1>
-			<div class="item loggedin">
-			logged in as {{user.first_name}}
-			</div>
-			<ul>
-	 		 		{% if user.is_authenticated %}
-	 					<li>Welcome {{ user.first_name }}</li>|
-	 					<li><a href="api/logout">Logout</a></li>
-	 				{% endif %}
-	 		</ul>
+				<h1 id="logo">donkidik</h1>
+				<div class="item loggedin">
+					logged in as {{user.first_name}}
+				</div>
 	 		</div>
-	 		<a class="item" href="/">Feed</a>
-  			<a class="item disabled">Forecasts</a>
-  			<a class="item disabled">Market</a>
-  			<a class="item disabled">Lost & Found</a>
-  			<a class="item disabled">Media</a>
-  			<a class="item" href="/api/logout/">Logout</a>
+	 		<a class="feed item" href="/">Feed</a>
+	 		<a class="profile item" href="/user/{{user.id}}/">My Profile</a>
+  			<a class="fcst item disabled">Forecasts</a>
+  			<a class="mkt item disabled">Market</a>
+  			<a class="lf item disabled">Lost & Found</a>
+  			<a class="mdia item disabled">Media</a>
+  			<a class="lgt item" href="/api/logout/">Logout</a>
 		</div>
 		<div class="main">
 	  	{% block body %}{% endblock %}
 	  	</div>
 	</div>
 </div>
+<script>
+	$(function(){
+		$('a.item.{% block menu_css %}{% endblock %}').addClass('active');
+	});
+</script>
 </html>
