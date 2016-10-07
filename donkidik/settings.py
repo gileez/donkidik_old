@@ -70,7 +70,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'ddik',
         'USER': 'root',
-        'PASSWORD':'dibi'
+        'PASSWORD':'' if os.getlogin()=='gili' else 'dibi'
     }
 }
 
